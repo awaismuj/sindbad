@@ -20,8 +20,12 @@ deploy/   nginx.conf, backup.sh
 
 ## Setup on the Contabo VPS (Ubuntu 24.04)
 ```bash
-apt update && apt install -y nginx php-fpm php-cli php-mbstring php-curl php-xml php-dev php-pear composer unzip git ufw fail2ban certbot python3-certbot-nginx
-pecl install mongodb && echo "extension=mongodb.so" > /etc/php/8.3/mods-available/mongodb.ini && phpenmod mongodb && systemctl restart php8.3-fpm
+apt update && apt install -y nginx php-fpm php-cli php-mbstring php-curl php-xml php-dev composer unzip git ufw fail2ban certbot python3-certbot-nginx
+# Install PIE using https://github.com/php/pie, then install the MongoDB extension tested with PHP 8.5.
+pie install mongodb/mongodb-extension:2.5.5
+# Ensure the extension is enabled for both the PHP CLI and the PHP-FPM version serving the site.
+php --ri mongodb
+systemctl restart php8.5-fpm  # replace 8.5 with the installed PHP-FPM version
 # MongoDB 7: follow https://www.mongodb.com/docs/manual/administration/install-on-linux/ then enable auth, bind 127.0.0.1
 mongosh  # use sindbad; db.createUser({user:"sindbad_app",pwd:"STRONG",roles:[{role:"readWrite",db:"sindbad"}]})
 ufw allow OpenSSH && ufw allow 'Nginx Full' && ufw enable
@@ -29,7 +33,7 @@ ufw allow OpenSSH && ufw allow 'Nginx Full' && ufw enable
 Deploy:
 ```bash
 mkdir -p /var/www/sindbad && cd /var/www/sindbad   # upload/unzip this project here
-cd server && composer install --no-dev -o && cp .env.example .env && nano .env   # real secrets
+cd server && composer update --no-dev -o && composer check-platform-reqs && cp .env.example .env && nano .env   # real secrets
 php scripts/seed.php          # indexes, first Super Admin, DEMO content (edit/delete it in admin)
 cd ../client && npm ci && npm run build
 cp ../deploy/nginx.conf /etc/nginx/sites-available/sindbadsolution.com && ln -s /etc/nginx/sites-available/sindbadsolution.com /etc/nginx/sites-enabled/
