@@ -1,0 +1,12 @@
+{
+  "name": "sindbad/solution-api",
+  "description": "Sindbad Solution website API (PHP + MongoDB)",
+  "type": "project",
+  "require": {
+    "php": ">=8.2",
+    "ext-mongodb": "*",
+    "ext-mbstring": "*",
+    "mongodb/mongodb": "^1.19"
+  },
+  "autoload": { "psr-4": { "App\\": "src/" } }
+}

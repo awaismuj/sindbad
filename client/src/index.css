@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-cream font-sans text-ink antialiased; }
+  h1, h2, h3, h4 { @apply font-display tracking-tight text-navy-900; }
+  :focus-visible { outline: 3px solid #F4B942; outline-offset: 2px; }
+}
+@layer components {
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-semibold transition-colors disabled:opacity-60; }
+  .btn-primary { @apply btn bg-teal text-navy-950 hover:bg-teal-600 hover:text-white; }
+  .btn-amber { @apply btn bg-amber text-navy-950 hover:bg-amber-600; }
+  .btn-ghost { @apply btn border border-white/30 text-white hover:bg-white/10; }
+  .btn-outline { @apply btn border border-navy-900/25 text-navy-900 hover:bg-navy-900 hover:text-white; }
+  .field { @apply w-full rounded-lg border border-navy-900/20 bg-white px-3 py-2.5 text-ink placeholder:text-ink/40; }
+  .label { @apply mb-1 block text-sm font-semibold text-navy-800; }
+  .container-x { @apply mx-auto w-full max-w-6xl px-5; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .drift { animation: drift 7s ease-in-out infinite alternate; }
+  @keyframes drift { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
+}
