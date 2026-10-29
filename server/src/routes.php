@@ -3,6 +3,19 @@ declare(strict_types=1);
 
 use App\{Auth, Content, Db, Guard, Http, Router};
 
+/** Validates a menu URL: external must be https/http; internal must be a known route or an existing published item. Returns an error string or null. */
+function self_check_url(string $url): ?string {
+    if (preg_match('#^https?://[^\s]+$#i', $url)) return null;
+    if (!str_starts_with($url, '/') || str_contains($url, ' ')) return 'Use a full https:// address or an internal path like /about';
+    $static = ['/', '/products', '/solutions', '/services', '/pricing', '/portfolio', '/about', '/blog', '/contact', '/demo', '/careers', '/life-at-sindbad'];
+    if (in_array($url, $static, true) || str_starts_with($url, '/blog')) return null;
+    if (preg_match('#^/(services|products|solutions)/([a-z0-9\-]+)$#', $url, $m)) {
+        $col = ['services' => 'services', 'products' => 'products', 'solutions' => 'industries'][$m[1]];
+        return Db::col($col)->findOne(['slug' => $m[2]]) ? null : 'That page does not exist yet. Create it first, then link to it';
+    }
+    return 'Unknown internal page';
+}
+
 return function (Router $r): void {
     $content = Content::all();
     $CONTENT_ROLES = ['content_manager'];
@@ -49,7 +62,7 @@ return function (Router $r): void {
 
         $r->add('GET', "/api/admin/$name", function () use ($name, $cfg, $CONTENT_ROLES) {
             Auth::require($CONTENT_ROLES);
-            $cur = Db::col($name)->find([], ['sort' => ['updated_at' => -1], 'limit' => 200, 'projection' => ['content' => 0]]);
+            $cur = Db::col($name)->find([], ['sort' => ['order' => 1, 'updated_at' => -1], 'limit' => 300, 'projection' => ['content' => 0]]);
             Http::json(['items' => Db::ser(iterator_to_array($cur, false))]);
         });
         $r->add('GET', "/api/admin/$name/{id}", function ($p) use ($name, $CONTENT_ROLES) {
@@ -63,6 +76,7 @@ return function (Router $r): void {
             [$data, $err] = Guard::clean(Http::body(), $cfg['fields'], $id !== null);
             if ($err) Http::error('Please fix the highlighted fields', 422, $err);
             $col = Db::col($name);
+            if ($name === 'nav_items' && isset($data['url']) && ($e = self_check_url($data['url']))) Http::error('Please fix the highlighted fields', 422, ['url' => $e]);
             if (empty($data['slug']) && isset($cfg['fields']['slug'])) {
                 if ($id === null) $data['slug'] = Guard::slug((string)($data[$cfg['slugFrom']] ?? ''));
             } elseif (isset($data['slug'])) $data['slug'] = Guard::slug($data['slug']);
@@ -72,6 +86,7 @@ return function (Router $r): void {
             }
             $data['updated_at'] = Db::now();
             if ($name === 'posts' && ($data['status'] ?? '') === 'published') $data['published_at'] = Db::now();
+            if (isset($cfg['fields']['slug']) === false) unset($data['slug']);
             if ($id === null) {
                 $data['created_at'] = Db::now();
                 if (array_key_exists('published', $cfg['fields']) && !isset($data['published'])) $data['published'] = false;
@@ -103,7 +118,7 @@ return function (Router $r): void {
         'interest' => ['type' => 'string'], 'budget' => ['type' => 'string', 'max' => 60],
         'requirements' => ['type' => 'text', 'required' => true, 'max' => 4000],
         'contact_method' => ['type' => 'enum:email|phone|whatsapp'], 'consent' => ['type' => 'bool'],
-        'source_page' => ['type' => 'string', 'max' => 200],
+        'subject' => ['type' => 'string', 'max' => 200], 'source_page' => ['type' => 'string', 'max' => 200],
     ];
     $demoSpec = [
         'name' => ['type' => 'string', 'required' => true], 'company' => ['type' => 'string', 'required' => true],
@@ -117,8 +132,8 @@ return function (Router $r): void {
         'notes' => ['type' => 'text', 'max' => 5000], 'assigned_to' => ['type' => 'string'],
         'scheduled_date' => ['type' => 'string', 'max' => 40], 'outcome' => ['type' => 'text', 'max' => 2000],
     ];
-    foreach (['leads' => $leadSpec, 'demos' => $demoSpec] as $col => $spec) {
-        $r->add('POST', "/api/$col", function () use ($col, $spec) {
+    foreach (['leads' => $leadSpec, 'demos' => $demoSpec, 'applications' => []] as $col => $spec) {
+        if ($spec) $r->add('POST', "/api/$col", function () use ($col, $spec) {
             Guard::rateLimit($col, 5, 3600);
             $b = Http::body();
             if (!empty($b['website'])) Http::json(['ok' => true]); // honeypot: pretend success to bots
@@ -177,9 +192,18 @@ return function (Router $r): void {
             'email' => ['type' => 'email'], 'phone' => ['type' => 'phone'], 'whatsapp' => ['type' => 'phone'], 'address' => ['type' => 'string', 'max' => 300],
             'hours' => ['type' => 'string'], 'currency' => ['type' => 'string', 'max' => 5],
             'linkedin' => ['type' => 'url'], 'facebook' => ['type' => 'url'], 'instagram' => ['type' => 'url'], 'x' => ['type' => 'url'],
-            'hero_title' => ['type' => 'string'], 'hero_text' => ['type' => 'text', 'max' => 500],
+            'hero_title' => ['type' => 'string'], 'hero_text' => ['type' => 'text', 'max' => 500], 'logo' => ['type' => 'url'], 'favicon' => ['type' => 'url'],
+            'copyright' => ['type' => 'string', 'max' => 200], 'privacy_url' => ['type' => 'url'], 'terms_url' => ['type' => 'url'], 'analytics_id' => ['type' => 'string', 'max' => 40],
+            'service_intro' => ['type' => 'text', 'max' => 400],
+            'brand_primary' => ['type' => 'color'], 'brand_accent' => ['type' => 'color'], 'brand_dark' => ['type' => 'color'],
+            'og_image' => ['type' => 'url'], 'cta_label' => ['type' => 'string', 'max' => 30], 'cta_url' => ['type' => 'string', 'max' => 200],
+            'footer_note' => ['type' => 'string', 'max' => 200],
+            // Email: only non-secret choices live here. SMTP/API credentials belong in server/.env, never in the database or the browser.
+            'email_provider' => ['type' => 'enum:none|smtp|sendgrid|mailgun|ses'], 'email_from_name' => ['type' => 'string', 'max' => 80],
+            'email_from' => ['type' => 'email'], 'notify_email' => ['type' => 'email'],
             'seo_title' => ['type' => 'string', 'max' => 70], 'seo_description' => ['type' => 'string', 'max' => 170],
         ]);
+        if (!empty($data['cta_url']) && ($e = self_check_url($data['cta_url']))) $err['cta_url'] = $e;
         if ($err) Http::error('Please fix the highlighted fields', 422, $err);
         $data['updated_at'] = Db::now();
         Db::col('settings')->updateOne(['_id' => 'site'], ['$set' => $data], ['upsert' => true]);
@@ -223,5 +247,118 @@ return function (Router $r): void {
         $id = (string)Db::col('users')->insertOne($d)->getInsertedId();
         Guard::audit($u, 'create', 'users', $id);
         Http::json(['id' => $id], 201);
+    });
+    $r->add('PUT', '/api/admin/users/{id}', function ($p) {
+        $u = Auth::require(['__none__']);
+        $b = Http::body();
+        [$d, $err] = Guard::clean($b, [
+            'name' => ['type' => 'string'], 'role' => ['type' => 'enum:super_admin|content_manager|sales_manager'], 'active' => ['type' => 'bool'],
+        ], true);
+        $pw = (string)($b['password'] ?? '');
+        if ($pw !== '' && strlen($pw) < 12) $err['password'] = 'Use at least 12 characters';
+        if ($err) Http::error('Please fix the highlighted fields', 422, $err);
+        $oid = Db::oid($p['id']) ?? Http::error('Not found', 404);
+        $target = Db::col('users')->findOne(['_id' => $oid]) ?? Http::error('Not found', 404);
+        // Safeguard: never leave the site without an active Super Admin, and never let someone lock themselves out.
+        $demoting = ($target['role'] === 'super_admin' && (($d['role'] ?? 'super_admin') !== 'super_admin' || (array_key_exists('active', $d) && !$d['active'])));
+        if ($demoting && (string)$target['_id'] === $u['id']) Http::error('You cannot remove your own Super Admin access', 422);
+        if ($demoting && Db::col('users')->countDocuments(['role' => 'super_admin', 'active' => true, '_id' => ['$ne' => $oid]]) < 1)
+            Http::error('At least one active Super Admin is required', 422);
+        if ($pw !== '') $d['password_hash'] = password_hash($pw, PASSWORD_ARGON2ID);
+        if (!$d) Http::error('Nothing to update', 422);
+        Db::col('users')->updateOne(['_id' => $oid], ['$set' => $d + ['updated_at' => Db::now()]]);
+        Guard::audit($u, $pw !== '' ? 'update+password' : 'update', 'users', $p['id']);
+        Http::json(['ok' => true]);
+    });
+    $r->add('GET', '/api/admin/audit', function () {
+        Auth::require(['__none__']);
+        $page = max(1, (int)($_GET['page'] ?? 1)); $per = 30;
+        $c = Db::col('audit_logs');
+        $items = $c->find([], ['sort' => ['created_at' => -1], 'limit' => $per, 'skip' => ($page - 1) * $per]);
+        Http::json(['items' => Db::ser(iterator_to_array($items, false)), 'total' => $c->countDocuments([]), 'page' => $page, 'per' => $per]);
+    });
+    // ---------- Navigation (header tree + footer groups, built from admin data) ----------
+    $r->add('GET', '/api/navigation', function () {
+        $items = Db::ser(iterator_to_array(Db::col('nav_items')->find(['published' => true], ['sort' => ['order' => 1]]), false));
+        $auto = function (string $kind): array {
+            [$col, $f, $base] = match ($kind) {
+                'services' => ['services', ['status' => 'published', 'show_in_menu' => true], '/services/'],
+                'products' => ['products', ['published' => true], '/products/'],
+                default => ['industries', ['published' => true], '/solutions/'],
+            };
+            $out = [];
+            foreach (Db::col($col)->find($f, ['sort' => ['order' => 1, 'name' => 1], 'projection' => ['name' => 1, 'slug' => 1, 'short' => 1, 'icon' => 1]]) as $d)
+                $out[] = ['label' => $d['name'], 'url' => $base . $d['slug'], 'description' => $d['short'] ?? '', 'icon' => $d['icon'] ?? ''];
+            return $out;
+        };
+        $header = [];
+        foreach ($items as $it) {
+            if ($it['group'] !== 'header' || !empty($it['parent'])) continue;
+            $kids = array_values(array_filter($items, fn($c) => ($c['parent'] ?? '') === $it['id']));
+            $it['children'] = array_merge($kids, ($it['auto_children'] ?? 'none') !== 'none' ? $auto($it['auto_children']) : []);
+            $header[] = $it;
+        }
+        $footerServices = [];
+        foreach (Db::col('services')->find(['status' => 'published', 'show_in_footer' => true], ['sort' => ['order' => 1, 'name' => 1]]) as $d)
+            $footerServices[] = ['label' => $d['name'], 'url' => '/services/' . $d['slug']];
+        Http::json([
+            'header' => $header,
+            'footer_quick' => array_values(array_filter($items, fn($i) => $i['group'] === 'footer_quick')),
+            'footer_explore' => array_values(array_filter($items, fn($i) => $i['group'] === 'footer_explore')),
+            'footer_services' => $footerServices,
+        ]);
+    });
+
+    // ---------- Careers applications (public) ----------
+    $r->add('POST', '/api/applications', function () {
+        Guard::rateLimit('applications', 5, 3600);
+        $b = Http::body();
+        if (!empty($b['website'])) Http::json(['ok' => true]);
+        [$d, $err] = Guard::clean($b, [
+            'name' => ['type' => 'string', 'required' => true], 'email' => ['type' => 'email', 'required' => true], 'phone' => ['type' => 'phone'],
+            'interest' => ['type' => 'string', 'required' => true], 'requirements' => ['type' => 'text', 'max' => 4000], 'resume_url' => ['type' => 'url'],
+            'source_page' => ['type' => 'string', 'max' => 200],
+        ]);
+        if ($err) Http::error('Please fix the highlighted fields', 422, $err);
+        Db::col('applications')->insertOne($d + ['status' => 'new', 'created_at' => Db::now(), 'updated_at' => Db::now()]);
+        Http::json(['ok' => true], 201);
+    });
+
+    // ---------- Image upload (admin) + dev file serving ----------
+    $r->add('POST', '/api/admin/upload', function () {
+        $u = Auth::require(['content_manager']);
+        Guard::rateLimit('upload', 60, 3600);
+        $f = $_FILES['file'] ?? null;
+        if (!$f || $f['error'] !== UPLOAD_ERR_OK) Http::error('Upload failed. Choose an image under 3 MB.', 422);
+        if ($f['size'] > 3 * 1024 * 1024) Http::error('Image is larger than 3 MB', 422);
+        $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($f['tmp_name']);
+        $ext = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp', 'image/gif' => 'gif'][$mime] ?? null;
+        if (!$ext || !@getimagesize($f['tmp_name'])) Http::error('Only JPG, PNG, WebP or GIF images are allowed', 422);
+        $dir = App\Env::get('UPLOAD_DIR', __DIR__ . '/../uploads');
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        $name = bin2hex(random_bytes(12)) . '.' . $ext;
+        if (!move_uploaded_file($f['tmp_name'], "$dir/$name")) Http::error('Could not save the image on the server', 500);
+        Db::col('media')->insertOne(['file' => $name, 'mime' => $mime, 'size' => $f['size'], 'by' => $u['email'], 'created_at' => Db::now()]);
+        Guard::audit($u, 'upload', 'media', $name);
+        Http::json(['url' => '/uploads/' . $name], 201);
+    });
+    $r->add('GET', '/uploads/{file}', function ($p) { // used in dev; in production Nginx serves /uploads directly
+        $dir = App\Env::get('UPLOAD_DIR', __DIR__ . '/../uploads');
+        if (!preg_match('/^[a-f0-9]{24}\.(jpg|png|webp|gif)$/', $p['file']) || !is_file("$dir/{$p['file']}")) Http::error('Not found', 404);
+        header('Content-Type: ' . mime_content_type("$dir/{$p['file']}")); header('Cache-Control: public, max-age=31536000');
+        readfile("$dir/{$p['file']}"); exit;
+    });
+
+    // ---------- sitemap.xml (published content only) ----------
+    $r->add('GET', '/sitemap.xml', function () {
+        $base = rtrim(App\Env::get('APP_URL', 'https://sindbadsolution.com'), '/');
+        $urls = array_map(fn($p) => $base . $p, ['/', '/products', '/solutions', '/services', '/pricing', '/portfolio', '/about', '/blog', '/contact', '/demo', '/careers', '/life-at-sindbad']);
+        foreach ([['services', ['status' => 'published'], '/services/'], ['products', ['published' => true], '/products/'], ['industries', ['published' => true], '/solutions/'],
+                  ['posts', ['status' => 'published'], '/blog/'], ['jobs', ['published' => true], '/careers#']] as [$c, $f, $pre])
+            foreach (Db::col($c)->find($f, ['projection' => ['slug' => 1]]) as $d) if (!str_contains($pre, '#')) $urls[] = $base . $pre . $d['slug'];
+        header('Content-Type: application/xml; charset=utf-8'); header('Cache-Control: public, max-age=3600');
+        echo '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+        foreach ($urls as $u) echo '<url><loc>' . htmlspecialchars($u, ENT_XML1) . '</loc></url>';
+        echo '</urlset>'; exit;
     });
 };

@@ -4,9 +4,9 @@
   "type": "project",
   "require": {
     "php": ">=8.2",
-    "ext-mongodb": "~2.5.0",
+    "ext-mongodb": "*",
     "ext-mbstring": "*",
-    "mongodb/mongodb": "~2.5.0"
+    "mongodb/mongodb": "^1.19"
   },
   "autoload": { "psr-4": { "App\\": "src/" } }
 }

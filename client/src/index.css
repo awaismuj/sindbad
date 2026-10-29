@@ -2,22 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --navy-950: 6 18 36; --navy-900: 10 27 51; --navy-800: 16 41 75; --navy-700: 23 55 97; --navy-600: 36 80 127;
+  --teal: 46 196 182; --teal-600: 30 156 144; --teal-700: 23 122 113; --teal-50: 232 248 246;
+  --amber: 244 185 66; --amber-600: 217 154 28;
+  --paper: 245 247 250; --paper-200: 232 236 243; --ink: 18 35 59;
+}
 @layer base {
-  body { @apply bg-cream font-sans text-ink antialiased; }
-  h1, h2, h3, h4 { @apply font-display tracking-tight text-navy-900; }
-  :focus-visible { outline: 3px solid #F4B942; outline-offset: 2px; }
+  html { scroll-behavior: smooth; }
+  body { @apply bg-cream font-sans text-ink antialiased; font-feature-settings: 'ss01', 'cv11'; }
+  h1, h2, h3, h4 { @apply font-display text-navy-900; letter-spacing: -0.025em; font-variation-settings: 'opsz' 48; }
+  h1 { font-variation-settings: 'opsz' 96; }
+  :focus-visible { outline: 3px solid rgb(var(--amber)); outline-offset: 3px; border-radius: 6px; }
+  ::selection { background: rgb(var(--teal) / .3); }
 }
 @layer components {
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-semibold transition-colors disabled:opacity-60; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-[0.95rem] font-semibold transition-colors duration-200 disabled:opacity-60; }
   .btn-primary { @apply btn bg-teal text-navy-950 hover:bg-teal-600 hover:text-white; }
   .btn-amber { @apply btn bg-amber text-navy-950 hover:bg-amber-600; }
-  .btn-ghost { @apply btn border border-white/30 text-white hover:bg-white/10; }
-  .btn-outline { @apply btn border border-navy-900/25 text-navy-900 hover:bg-navy-900 hover:text-white; }
-  .field { @apply w-full rounded-lg border border-navy-900/20 bg-white px-3 py-2.5 text-ink placeholder:text-ink/40; }
-  .label { @apply mb-1 block text-sm font-semibold text-navy-800; }
-  .container-x { @apply mx-auto w-full max-w-6xl px-5; }
+  .btn-ghost { @apply btn border border-white/30 text-white hover:border-white hover:bg-white/10; }
+  .btn-outline { @apply btn border border-navy-900/25 text-navy-900 hover:border-navy-900 hover:bg-navy-900 hover:text-white; }
+  .btn-dark { @apply btn bg-navy-900 text-white hover:bg-navy-700; }
+  .field { @apply w-full rounded-xl border border-navy-900/15 bg-white px-4 py-3 text-ink placeholder:text-ink/40 transition-colors focus:border-teal; }
+  .label { @apply mb-1.5 block text-sm font-semibold text-navy-800; }
+  .container-x { @apply mx-auto w-full max-w-7xl px-5 md:px-8; }
+  .card { @apply rounded-2xl bg-white ring-1 ring-navy-900/10 transition-shadow duration-200 hover:shadow-lift hover:ring-teal/70; }
+  .chip { @apply rounded-lg bg-navy-900/[.06] px-3 py-1.5 text-sm font-semibold text-navy-800; }
+  .h-section { @apply text-3xl font-bold leading-[1.1] md:text-5xl; }
+  .on-dark { @apply !text-white; }
+  /* Chart paper: the sea-chart grid used behind dark sections */
+  .chart-grid {
+    background-image:
+      radial-gradient(ellipse 70% 80% at 80% 10%, rgb(var(--teal) / .14), transparent 60%),
+      linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size: auto, 64px 64px, 64px 64px;
+  }
+  .prose-sindbad { @apply text-[1.075rem] leading-[1.75] text-ink/90; }
+  .prose-sindbad > * + * { @apply mt-5; }
+  .prose-sindbad h2 { @apply mt-10 text-3xl font-bold; }
+  .prose-sindbad h3 { @apply mt-8 text-2xl font-bold; }
+  .prose-sindbad ul { @apply list-disc pl-6; }
+  .prose-sindbad ol { @apply list-decimal pl-6; }
+  .prose-sindbad li + li { @apply mt-1.5; }
+  .prose-sindbad a { @apply font-semibold text-teal-700 underline underline-offset-2; }
+  .prose-sindbad img { @apply rounded-2xl; }
+  .prose-sindbad table { @apply w-full border-collapse text-base; }
+  .prose-sindbad th, .prose-sindbad td { @apply border border-navy-900/15 p-3 text-left; }
+  .prose-sindbad th { @apply bg-navy-900/5; }
+  .prose-sindbad blockquote { @apply border-l-4 border-teal pl-5 italic; }
 }
+.draw { stroke-dasharray: 0; }
 @media (prefers-reduced-motion: no-preference) {
-  .drift { animation: drift 7s ease-in-out infinite alternate; }
-  @keyframes drift { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
+  /* One orchestrated moment: the service chart draws itself on first load. */
+  .draw { stroke-dasharray: 520; stroke-dashoffset: 520; animation: draw 2.2s ease-out forwards; }
+  .pop { opacity: 0; animation: pop .6s ease-out forwards; }
+  .swell { animation: swell 9s ease-in-out infinite alternate; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes pop { to { opacity: 1; } }
+  @keyframes swell { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
 }
