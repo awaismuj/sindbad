@@ -1,4 +1,6 @@
 @import '@fontsource-variable/sora';
+@import '@fontsource/tajawal/700.css';
+@import '@fontsource/tajawal/800.css';
 @import '@fontsource/hanken-grotesk/400.css';
 @import '@fontsource/hanken-grotesk/500.css';
 @import '@fontsource/hanken-grotesk/600.css';
@@ -15,7 +17,7 @@
 }
 @layer components {
   .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-semibold transition duration-150 disabled:opacity-60; }
-  .btn-primary { @apply btn bg-sea-600 text-white shadow-sm hover:bg-sea-700; }
+  .btn-primary { @apply btn bg-navy-800 text-white shadow-sm hover:bg-navy-700; }
   .btn-amber { @apply btn bg-amber text-navy-950 hover:bg-amber-600; }
   .btn-ghost { @apply btn border border-white/40 text-white hover:bg-white/10; }
   .btn-outline { @apply btn border border-navy-900/20 bg-white text-navy-900 hover:border-sea-600 hover:text-sea-700; }
@@ -31,24 +33,27 @@
 .hero__copy { display: flex; flex-direction: column; justify-content: center; padding: 3.5rem 1.25rem 3rem; }
 @media (min-width: 1024px) { .hero__copy { padding: 4rem 3rem 4rem max(1.25rem, calc((100vw - 72rem) / 2 + 1.25rem)); } }
 .hero__blue {
-  position: relative; overflow: hidden; display: grid; place-items: center; padding: 4rem 1.25rem 3rem; color: #fff;
+  position: relative; overflow: hidden; display: grid; place-items: center; padding: 4rem 1.25rem 8rem; color: #fff;
   background:
-    radial-gradient(ellipse at 20% 15%, rgba(80,150,255,.45), transparent 55%),
-    linear-gradient(160deg, #1560D6 0%, #0E43A6 55%, #0A2F73 100%);
+    radial-gradient(ellipse at 70% 30%, rgba(46,120,190,.35), transparent 60%),
+    linear-gradient(160deg, #12335F 0%, #0B2447 55%, #071A36 100%);
 }
-@media (min-width: 1024px) { .hero__blue { padding: 4rem 3rem 4rem 5rem; } }
+@media (min-width: 1024px) { .hero__blue { padding: 4rem 3rem 8rem 5rem; } }
 .hero__grid {
   position: absolute; inset: 0; pointer-events: none;
   background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
   background-size: 48px 48px; mask-image: radial-gradient(circle at 55% 50%, #000 20%, transparent 75%); -webkit-mask-image: radial-gradient(circle at 55% 50%, #000 20%, transparent 75%);
 }
+.hero__blue::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 110px; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 110' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%232EC4B6' stroke-width='2'%3E%3Cpath opacity='.7' d='M0 40q37-26 75 0t75 0 75 0 75 0 75 0 75 0 75 0 75 0'/%3E%3Cpath opacity='.5' d='M0 62q37-26 75 0t75 0 75 0 75 0 75 0 75 0 75 0 75 0'/%3E%3Cpath opacity='.3' d='M0 84q37-26 75 0t75 0 75 0 75 0 75 0 75 0 75 0 75 0'/%3E%3C/g%3E%3C/svg%3E") bottom/100% 100% no-repeat; }
+@media (min-width: 1024px) { .hero__blue::after { left: 3.5rem; } }
 .hero__reveal { animation: rise 700ms cubic-bezier(.2,.7,.2,1) both; }
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 .route path { stroke-dasharray: 5 6; animation: dash 18s linear infinite; }
 @keyframes dash { to { stroke-dashoffset: -220; } }
 @media (prefers-reduced-motion: reduce) { .hero__reveal, .route path { animation: none; } html { scroll-behavior: auto; } }
 
-.band-blue { background: linear-gradient(160deg, #1560D6 0%, #0E43A6 55%, #0A2F73 100%); color: #fff; }
+.band-blue { background: linear-gradient(160deg, #12335F 0%, #0B2447 55%, #071A36 100%); color: #fff; }
 
 /* ---------- Client showcase ---------- */
 .client-showcase__viewport {

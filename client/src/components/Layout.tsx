@@ -22,8 +22,7 @@ export const DEFAULT_FOOTER_GROUPS = [
   { title: 'Explore', links: [
     { label: 'Products', path: '/products', enabled: true }, { label: 'Solutions', path: '/solutions', enabled: true },
     { label: 'Services', path: '/services', enabled: true }, { label: 'Pricing', path: '/pricing', enabled: true },
-    { label: 'About', path: '/about', enabled: true }, { label: 'Contact', path: '/contact', enabled: true },
-    { label: 'Portfolio', path: '/portfolio', enabled: true }, { label: 'Blog', path: '/blog', enabled: true },
+    { label: 'Portfolio', path: '/portfolio', enabled: true },
   ] },
 ]
 
@@ -106,7 +105,7 @@ export function Layout() {
           </div>)}
           <div>
             <h3 className="font-display text-white">Our Services</h3>
-            <ul className="mt-3 space-y-2">{allServices.filter((service) => service.footer_visible).map((service) =>
+            <ul className="mt-3 space-y-2">{(allServices.some((x) => x.footer_visible) ? allServices.filter((x) => x.footer_visible) : allServices.slice(0, 6)).map((service) =>
               <li key={service.id}><Link className="hover:text-sea-600" to={`/services/${service.slug}`}>{service.name}</Link></li>)}</ul>
           </div>
           <div>

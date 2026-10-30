@@ -46,7 +46,6 @@ export default function Home() {
               <img src={set.logo_url || '/brand/logo.png'} alt="" width={44} height={44} className="rounded-full" />
               <div>
                 <p className="font-display text-sm font-semibold text-navy-900">{set.tagline || 'We sail your business toward new digital horizons'}</p>
-                <p className="font-arabic text-base text-sea-700" lang="ar" dir="rtl">نبحر بأعمالك نحو آفاق رقمية جديدة</p>
               </div>
             </div>
           </div>
