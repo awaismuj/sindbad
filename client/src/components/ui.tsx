@@ -6,7 +6,7 @@ export const Empty = ({ children }: { children: ReactNode }) => (
 export const ErrorBox = ({ message }: { message: string }) => (
   <div role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-800">{message}</div>
 )
-export const Wave = ({ className = '', fill = 'rgb(var(--cream))' }: { className?: string; fill?: string }) => (
+export const Wave = ({ className = '', fill = '#F4F1EA' }: { className?: string; fill?: string }) => (
   <svg viewBox="0 0 1200 60" preserveAspectRatio="none" className={`block h-10 w-full ${className}`} aria-hidden>
     <path d="M0 30 Q150 0 300 30 T600 30 T900 30 T1200 30 V60 H0Z" fill={fill} />
   </svg>

@@ -62,7 +62,6 @@ export function LeadForm({ kind, defaultInterest = '' }: { kind: Kind; defaultIn
         <label className="label" htmlFor="interest">Product or service of interest</label>
         <input id="interest" name="interest" defaultValue={defaultInterest} className="field" />
       </div>
-      {!demo && <div className="sm:col-span-2"><Fld errs={fields} name="subject" label="Subject" /></div>}
       {demo ? <>
         <Fld errs={fields} name="locations" label="Number of business locations" type="number" />
         <Fld errs={fields} name="preferred_time" label="Preferred date or time to talk" />

@@ -14,9 +14,9 @@ export const Section = ({ title, intro, children, tone = 'light' }: { title?: st
 
 export function PageHead({ title, intro }: { title: string; intro?: string }) {
   return (
-    <div className="chart-grid bg-navy-900 text-white">
-      <div className="container-x py-16 md:py-20">
-        <h1 className="max-w-4xl text-4xl font-extrabold !text-white md:text-6xl">{title}</h1>
+    <div className="bg-navy-900 text-white">
+      <div className="container-x py-14">
+        <h1 className="text-4xl font-extrabold !text-white md:text-5xl">{title}</h1>
         {intro && <p className="mt-4 max-w-2xl text-lg text-white/80">{intro}</p>}
       </div>
     </div>
@@ -52,8 +52,8 @@ export const Checks = ({ items }: { items?: string[] }) => (
 )
 
 export const CtaBand = ({ title = 'Tell us how your business runs today', text = 'We will show you what can be automated, and what it would take.' }) => (
-  <section className="chart-grid bg-navy-900">
-    <div className="container-x flex flex-col items-start justify-between gap-6 py-16 md:flex-row md:items-center">
+  <section className="bg-navy-900">
+    <div className="container-x flex flex-col items-start justify-between gap-6 py-14 md:flex-row md:items-center">
       <div><h2 className="text-3xl font-bold !text-white">{title}</h2><p className="mt-2 text-white/75">{text}</p></div>
       <div className="flex gap-3"><Link to="/demo" className="btn-amber">Book a free demo</Link><Link to="/contact" className="btn-ghost">Request a quote</Link></div>
     </div>

@@ -4,7 +4,6 @@ import { Seo } from '../../components/Seo'
 import { Badge } from '../../components/ui'
 import { Checks, CtaBand, Faqs, PageHead, Section, State } from '../../components/bits'
 import { LeadForm } from '../../components/LeadForm'
-import { Html } from '../../components/Html'
 import NotFound from './NotFound'
 
 export function Solutions() {
@@ -38,7 +37,7 @@ export function IndustryDetail() {
       <Seo title={i.seo_title || i.name} description={i.seo_description || i.headline} />
       <PageHead title={i.name} intro={i.headline} />
       <Section>
-        <Html html={i.description} className="max-w-3xl" />
+        <p className="max-w-3xl text-lg">{i.description}</p>
         <div className="mt-10 grid gap-10 md:grid-cols-3">
           <div><h2 className="text-xl font-bold">Common problems</h2><div className="mt-3"><Checks items={i.problems} /></div></div>
           <div><h2 className="text-xl font-bold">How the software helps</h2><div className="mt-3"><Checks items={i.features} /></div></div>
@@ -90,7 +89,7 @@ export function ProductDetail() {
       <Section>
         <div className="mb-6 flex items-center gap-3"><Badge value={p.status} />{p.category && <span className="text-ink/60">{p.category}</span>}</div>
         {p.image && <img src={p.image} alt={`${p.name} preview`} loading="lazy" className="mb-8 w-full max-w-3xl rounded-xl" />}
-        <Html html={p.description} className="max-w-3xl" />
+        <p className="max-w-3xl whitespace-pre-line text-lg">{p.description}</p>
         <div className="mt-10 grid gap-10 md:grid-cols-2">
           <div><h2 className="text-xl font-bold">Features</h2><div className="mt-3"><Checks items={p.features} /></div></div>
           <div><h2 className="text-xl font-bold">Benefits</h2><div className="mt-3"><Checks items={p.benefits} /></div></div>
@@ -126,5 +125,29 @@ export function PlanGrid({ plans }: { plans: any[] }) {
         </div>
       ))}
     </div>
+  )
+}
+
+export function Services() {
+  const { data, loading, error } = useApi<{ items: any[] }>('/api/services')
+  return (
+    <>
+      <Seo title="Services" description="Custom software, POS and ERP development, automation and support." />
+      <PageHead title="Services" intro="From a single automation to a full business system." />
+      <Section>
+        <State loading={loading} error={error} empty={!data?.items.length} emptyText="No services published yet." />
+        <div className="grid gap-6 md:grid-cols-2">
+          {data?.items.map((s) => (
+            <article id={s.slug} key={s.id} className="rounded-xl border border-navy-900/10 bg-white p-7">
+              <h2 className="text-xl font-bold">{s.name}</h2><p className="mt-2 text-ink/80">{s.description}</p>
+              {s.benefits?.length > 0 && <div className="mt-4"><Checks items={s.benefits} /></div>}
+              {s.deliverables?.length > 0 && <p className="mt-4 text-sm text-ink/70"><b>Deliverables:</b> {s.deliverables.join(', ')}</p>}
+              <Link to={`/contact?interest=${encodeURIComponent(s.name)}`} className="btn-outline mt-5">Enquire about this service</Link>
+            </article>
+          ))}
+        </div>
+      </Section>
+      <CtaBand />
+    </>
   )
 }

@@ -3,48 +3,21 @@
 @tailwind utilities;
 
 @layer base {
-  /* Brand colours as RGB channels so Tailwind opacity modifiers keep working. Overridden from Admin > Settings (see lib/theme.ts). */
-  :root {
-    --navy-950: 7 22 41; --navy-900: 11 31 58; --navy-800: 16 41 75; --navy-700: 23 55 97; --navy-600: 36 80 127;
-    --teal: 46 196 182; --teal-600: 30 156 144; --teal-700: 23 122 113; --teal-50: 232 248 246;
-    --amber: 244 185 66; --amber-600: 217 154 28; --cream: 244 241 234; --cream-200: 233 228 216;
-  }
   body { @apply bg-cream font-sans text-ink antialiased; }
-  h1, h2, h3, h4 { @apply font-display text-navy-900; letter-spacing: -0.02em; }
-  :focus-visible { outline: 3px solid rgb(var(--amber)); outline-offset: 2px; }
+  h1, h2, h3, h4 { @apply font-display tracking-tight text-navy-900; }
+  :focus-visible { outline: 3px solid #F4B942; outline-offset: 2px; }
 }
 @layer components {
-  .btn { @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-semibold transition-all duration-200 disabled:opacity-60; }
-  .btn-primary { @apply btn bg-teal text-navy-950 hover:bg-white; }
-  .btn-amber { @apply btn bg-amber text-navy-950 hover:bg-white; }
-  .btn-ghost { @apply btn border border-white/35 text-white hover:border-white hover:bg-white/10; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-semibold transition-colors disabled:opacity-60; }
+  .btn-primary { @apply btn bg-teal text-navy-950 hover:bg-teal-600 hover:text-white; }
+  .btn-amber { @apply btn bg-amber text-navy-950 hover:bg-amber-600; }
+  .btn-ghost { @apply btn border border-white/30 text-white hover:bg-white/10; }
   .btn-outline { @apply btn border border-navy-900/25 text-navy-900 hover:bg-navy-900 hover:text-white; }
-  .btn-dark { @apply btn bg-navy-900 text-white hover:bg-navy-700; }
-  .field { @apply w-full rounded-xl border border-navy-900/15 bg-white px-4 py-3 text-ink placeholder:text-ink/40 focus:border-teal; }
-  .label { @apply mb-1.5 block text-sm font-semibold text-navy-800; }
-  .container-x { @apply mx-auto w-full max-w-7xl px-5 md:px-8; }
-  .chart-grid {
-    background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
-    background-size: 56px 56px;
-  }
-  .prose-sindbad { @apply text-lg leading-relaxed text-ink/90; }
-  .prose-sindbad > * + * { @apply mt-5; }
-  .prose-sindbad h2 { @apply mt-10 text-3xl font-bold; }
-  .prose-sindbad h3 { @apply mt-8 text-2xl font-bold; }
-  .prose-sindbad ul { @apply list-disc pl-6; }
-  .prose-sindbad ol { @apply list-decimal pl-6; }
-  .prose-sindbad a { @apply font-semibold text-teal-700 underline; }
-  .prose-sindbad img { @apply rounded-2xl; }
-  .prose-sindbad table { @apply w-full border-collapse text-base; }
-  .prose-sindbad th, .prose-sindbad td { @apply border border-navy-900/15 p-3 text-left; }
-  .prose-sindbad blockquote { @apply border-l-4 border-teal pl-5 italic; }
+  .field { @apply w-full rounded-lg border border-navy-900/20 bg-white px-3 py-2.5 text-ink placeholder:text-ink/40; }
+  .label { @apply mb-1 block text-sm font-semibold text-navy-800; }
+  .container-x { @apply mx-auto w-full max-w-6xl px-5; }
 }
-.draw { stroke-dasharray: 0; }
 @media (prefers-reduced-motion: no-preference) {
-  .draw { stroke-dasharray: 520; stroke-dashoffset: 520; animation: draw 2.2s ease-out forwards; }
-  .pop { opacity: 0; animation: pop .6s ease-out forwards; }
-  .drift { animation: drift 8s ease-in-out infinite alternate; }
-  @keyframes draw { to { stroke-dashoffset: 0; } }
-  @keyframes pop { to { opacity: 1; } }
-  @keyframes drift { from { transform: translateX(-16px); } to { transform: translateX(16px); } }
+  .drift { animation: drift 7s ease-in-out infinite alternate; }
+  @keyframes drift { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
 }

@@ -6,7 +6,6 @@ import { LeadForm } from '../../components/LeadForm'
 import { Checks, CtaBand, Faqs, PageHead, Section, State } from '../../components/bits'
 import { PlanGrid } from './Catalog'
 import NotFound from './NotFound'
-import { Html } from '../../components/Html'
 
 export function Pricing() {
   const { data, loading, error } = useApi<{ items: any[] }>('/api/plans')
@@ -38,7 +37,7 @@ export function Portfolio() {
             <article key={p.id} className="rounded-xl border border-navy-900/10 bg-white p-7">
               {p.image && <img src={p.image} alt={`${p.name} screenshot`} loading="lazy" className="mb-4 rounded-lg" />}
               <h2 className="text-xl font-bold">{p.name}</h2><p className="text-sm text-ink/60">{p.industry}</p>
-              <Html html={p.description} className="mt-3 !text-base" />
+              <p className="mt-3">{p.description}</p>
               {p.challenges && <p className="mt-3"><b>Challenge: </b>{p.challenges}</p>}
               {p.solution && <p className="mt-2"><b>Solution: </b>{p.solution}</p>}
               {p.technologies?.length > 0 && <p className="mt-2 text-sm text-ink/70">{p.technologies.join(', ')}</p>}
@@ -89,12 +88,29 @@ export function BlogPost() {
   return (
     <>
       <Seo title={p.seo_title || p.title} description={p.seo_description || p.excerpt} />
-      <PageHead title={p.title} intro={[p.author, p.category].filter(Boolean).join(' · ')} />
+      <PageHead title={p.title} />
       <article className="container-x max-w-3xl py-14">
         {p.image && <img src={p.image} alt="" className="mb-8 rounded-xl" />}
-        <Html html={p.content} />
+        {String(p.content || '').split(/\n\s*\n/).map((para: string, i: number) => <p key={i} className="mb-5 text-lg leading-relaxed">{para}</p>)}
         {p.tags?.length > 0 && <p className="mt-8 text-sm text-ink/60">Tags: {p.tags.join(', ')}</p>}
       </article>
+    </>
+  )
+}
+
+export function About() {
+  return (
+    <>
+      <Seo title="About" description="About Sindbad Solution." />
+      <PageHead title="About Sindbad Solution" intro="We sail your business toward new digital horizons." />
+      <Section>
+        <div className="grid gap-10 md:grid-cols-2">
+          <div><h2 className="text-2xl font-bold">Who we are</h2>
+            <p className="mt-3 text-lg">Sindbad Solution builds practical business software: ready-made products for common industries, and custom systems when your process is different. Edit this page's text in your code or ask us to connect it to the admin panel.</p></div>
+          <div><h2 className="text-2xl font-bold">How we work</h2><div className="mt-3"><Checks items={['We learn your workflow first', 'We configure or build only what you need', 'We train your team and stay available for support', 'We are honest about what is available today']} /></div></div>
+        </div>
+      </Section>
+      <CtaBand />
     </>
   )
 }
