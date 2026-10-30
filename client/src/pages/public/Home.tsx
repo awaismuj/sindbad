@@ -34,20 +34,19 @@ export default function Home() {
       <section className="hero" aria-label="Introduction">
         <div className="hero__copy">
           <div className="hero__reveal max-w-xl">
-            <h1 className="text-4xl font-bold leading-[1.08] sm:text-5xl xl:text-[3.6rem]">{set.hero_title || 'Smart software for every business.'}</h1>
-            <p className="mt-6 max-w-lg text-lg leading-8 text-ink/75 sm:text-xl">
+            <h1 className="text-[2.5rem] font-semibold leading-[1.12] tracking-[-0.025em] sm:text-5xl xl:text-[3.5rem]">{set.hero_title || 'Smart software for every business.'}</h1>
+            <p className="mt-6 max-w-lg text-lg leading-8 text-ink/70">
               {set.hero_text || 'Manage operations, automate repetitive work and grow with practical software built around the way you run your business.'}
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Link to="/solutions" className="btn-primary !px-6 !py-3.5 text-base">Explore solutions <Arrow /></Link>
               <Link to="/demo" className="btn-outline !px-6 !py-3.5 text-base">Book a free demo</Link>
             </div>
-            <div className="mt-12 flex items-center gap-4 border-t border-sea-100 pt-6">
-              <img src={set.logo_url || '/brand/logo.png'} alt="" width={44} height={44} className="rounded-full" />
-              <div>
-                <p className="font-display text-sm font-semibold text-navy-900">{set.tagline || 'We sail your business toward new digital horizons'}</p>
-              </div>
-            </div>
+            <ul className="mt-12 grid max-w-lg grid-cols-2 gap-x-6 gap-y-3 border-t border-sea-100 pt-7 text-[15px] font-semibold text-navy-800">
+              {['POS & business management', 'ERP systems', 'Business automation', 'AI & machine learning'].map((t) => (
+                <li key={t} className="flex items-center gap-2.5"><span className="grid h-5 w-5 place-items-center rounded-full bg-teal/15 text-teal-700"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M7.7 14.3 3.4 10l1.4-1.4 2.9 2.9 7.5-7.5 1.4 1.4z" /></svg></span>{t}</li>
+              ))}
+            </ul>
           </div>
         </div>
         <div className="hero__blue">
