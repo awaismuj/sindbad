@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useApi } from '../../lib/api'
 import { Seo } from '../../components/Seo'
 import { LeadForm } from '../../components/LeadForm'
-import { Checks, CtaBand, Faqs, PageHead, Section, State } from '../../components/bits'
+import { CtaBand, Faqs, PageHead, Section, State } from '../../components/bits'
 import { PlanGrid } from './Catalog'
 import NotFound from './NotFound'
 
@@ -99,18 +99,25 @@ export function BlogPost() {
 }
 
 export function About() {
+  return <ManagedPage defaultSlug="about" />
+}
+
+export function ManagedPage({ defaultSlug }: { defaultSlug: string }) {
+  const { slug } = useParams()
+  const pageSlug = slug ?? defaultSlug
+  const { data, loading, error } = useApi<{ item: any }>(`/api/pages/${encodeURIComponent(pageSlug)}`)
+  if (loading) return <State loading error={null} empty={false} emptyText="" />
+  if (error || !data?.item) return <NotFound />
+  const page = data.item
   return (
     <>
-      <Seo title="About" description="About Sindbad Solution." />
-      <PageHead title="About Sindbad Solution" intro="We sail your business toward new digital horizons." />
+      <Seo title={page.seo_title || page.title || page.name} description={page.seo_description || page.short} />
+      <PageHead title={page.title || page.name} intro={page.short} />
       <Section>
-        <div className="grid gap-10 md:grid-cols-2">
-          <div><h2 className="text-2xl font-bold">Who we are</h2>
-            <p className="mt-3 text-lg">Sindbad Solution builds practical business software: ready-made products for common industries, and custom systems when your process is different. Edit this page's text in your code or ask us to connect it to the admin panel.</p></div>
-          <div><h2 className="text-2xl font-bold">How we work</h2><div className="mt-3"><Checks items={['We learn your workflow first', 'We configure or build only what you need', 'We train your team and stay available for support', 'We are honest about what is available today']} /></div></div>
-        </div>
+        {page.image && <img src={page.image} alt="" className="mb-8 max-h-[28rem] rounded-xl object-cover" />}
+        <article className="max-w-4xl whitespace-pre-line text-lg leading-relaxed">{page.content}</article>
       </Section>
-      <CtaBand />
+      <CtaBand title="Talk to the Sindbad Solution team" text="Contact us to discuss your questions or requirements." />
     </>
   )
 }

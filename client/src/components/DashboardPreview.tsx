@@ -1,20 +1,47 @@
-/** Illustrative mock only — not a real product screenshot. Labelled as such on the page. */
+const modules = [
+  { className: 'orders', icon: '↗', label: 'Orders & POS', detail: 'Sales workflows' },
+  { className: 'inventory', icon: '◈', label: 'Inventory', detail: 'Stock operations' },
+  { className: 'insights', icon: '⌁', label: 'Insights', detail: 'Business visibility' },
+  { className: 'automation', icon: '⟳', label: 'Automation', detail: 'Connected processes' },
+]
+
+/** Conceptual illustration of connected business tools; it does not display product metrics. */
 export function DashboardPreview() {
-  const bars = [38, 52, 44, 70, 58, 86, 74]
   return (
-    <figure className="relative">
-      <div className="rounded-2xl border border-white/15 bg-navy-800 p-4 shadow-2xl">
-        <div className="mb-3 flex gap-1.5">{['#F4B942', '#2EC4B6', '#F4F1EA'].map((c) => <i key={c} className="h-2.5 w-2.5 rounded-full" style={{ background: c }} />)}</div>
-        <div className="grid grid-cols-3 gap-3">
-          {[['Orders today', '—'], ['Low stock items', '—'], ['Open enquiries', '—']].map(([l, v]) => (
-            <div key={l} className="rounded-lg bg-navy-700 p-3"><p className="text-xs text-white/60">{l}</p><p className="font-display text-xl text-white">{v}</p></div>
-          ))}
-        </div>
-        <div className="mt-3 flex h-36 items-end gap-2 rounded-lg bg-navy-700 p-3" aria-hidden>
-          {bars.map((h, i) => <div key={i} className="flex-1 rounded-t" style={{ height: `${h}%`, background: i === 5 ? '#F4B942' : '#2EC4B6' }} />)}
+    <div className="home-dashboard" aria-label="Illustration of connected business tools">
+      <div className="home-dashboard__intro">
+        <span className="home-dashboard__eyebrow"><i /> ONE CONNECTED WORKSPACE</span>
+        <h2>Bring your business into focus.</h2>
+        <p>Purpose-built tools. Working together.</p>
+      </div>
+      <div className="home-dashboard__system">
+        <svg className="home-dashboard__connections" viewBox="0 0 520 320" fill="none" aria-hidden="true">
+          <path d="M170 100C205 100 205 145 241 145M350 100C315 100 315 145 279 145M170 235C205 235 205 190 241 190M350 235C315 235 315 190 279 190" />
+          <circle cx="170" cy="100" r="3" /><circle cx="350" cy="100" r="3" />
+          <circle cx="170" cy="235" r="3" /><circle cx="350" cy="235" r="3" />
+        </svg>
+        {modules.map((module) => (
+          <div key={module.className} className={`home-dashboard__module home-dashboard__module--${module.className}`}>
+            <span className="home-dashboard__module-icon" aria-hidden="true">{module.icon}</span>
+            <span><b>{module.label}</b><small>{module.detail}</small></span>
+            <span className="home-dashboard__module-dot" aria-hidden="true" />
+          </div>
+        ))}
+        <div className="home-dashboard__hub">
+          <span className="home-dashboard__hub-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40" fill="none">
+              <path d="M20 5v30M5 20h30M9.5 9.5l21 21m0-21-21 21" />
+              <circle cx="20" cy="20" r="5.5" />
+            </svg>
+          </span>
+          <b>Your business</b>
+          <small>Connected and in sync</small>
         </div>
       </div>
-      <figcaption className="mt-2 text-xs text-white/60">Illustrative layout, not a live product screenshot.</figcaption>
-    </figure>
+      <div className="home-dashboard__bottom">
+        <span><i /> Flexible by design</span>
+        <span>Built around the way you work</span>
+      </div>
+    </div>
   )
 }

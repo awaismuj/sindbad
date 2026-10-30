@@ -16,6 +16,20 @@ export async function api<T = any>(path: string, opts: { method?: string; body?:
   return data as T
 }
 
+export async function uploadImage(file: File): Promise<string> {
+  const body = new FormData()
+  body.append('file', file)
+  const res = await fetch('/api/admin/media', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: { 'X-Requested-With': 'sindbad' },
+    body,
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new ApiError(data.error || 'Image upload failed', res.status, data.fields || {})
+  return data.url as string
+}
+
 export function useApi<T = any>(path: string | null) {
   const [data, setData] = useState<T | null>(null)
   const [error, setError] = useState<string | null>(null)

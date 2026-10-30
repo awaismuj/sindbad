@@ -4,6 +4,7 @@ import { Seo } from '../../components/Seo'
 import { DashboardPreview } from '../../components/DashboardPreview'
 import { Badge, Wave } from '../../components/ui'
 import { Section, Faqs, CtaBand } from '../../components/bits'
+import { ClientShowcase } from '../../components/ClientShowcase'
 
 const steps = [
   ['Understand your workflow', 'We listen to how orders, stock, staff and reports work in your business today.'],
@@ -29,20 +30,56 @@ export default function Home() {
   return (
     <>
       <Seo description={set.seo_description || set.hero_text} title={set.seo_title} />
-      <section className="relative overflow-hidden bg-navy-900 text-white">
-        <div className="container-x grid items-center gap-12 pb-24 pt-16 lg:grid-cols-2 lg:pt-24">
-          <div>
-            <p className="font-arabic text-2xl text-amber" lang="ar" dir="rtl">نبحر بأعمالك نحو آفاق رقمية جديدة</p>
-            <h1 className="mt-4 text-4xl font-extrabold leading-tight !text-white md:text-6xl">{set.hero_title || 'Smart software for every business.'}</h1>
-            <p className="mt-5 max-w-xl text-lg text-white/80">{set.hero_text || 'Manage operations, automate repetitive work and grow with practical software built around the way you run your business.'}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/solutions" className="btn-primary">Explore solutions</Link>
-              <Link to="/demo" className="btn-ghost">Book a free demo</Link>
+      <section className="home-hero relative isolate overflow-hidden text-white">
+        <div className="home-hero__glow home-hero__glow--one" aria-hidden="true" />
+        <div className="home-hero__glow home-hero__glow--two" aria-hidden="true" />
+        <div className="home-hero__grid" aria-hidden="true" />
+        <div className="container-x relative grid min-h-[620px] items-center gap-14 pb-24 pt-16 lg:min-h-[690px] lg:grid-cols-[1.02fr_0.98fr] lg:gap-16 lg:pb-28 lg:pt-20">
+          <div className="home-hero__copy max-w-2xl">
+            <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-2 text-xs font-semibold tracking-wide text-white/80 shadow-lg shadow-black/10 backdrop-blur">
+              <span className="h-2 w-2 rounded-full bg-teal shadow-[0_0_12px_rgba(46,196,182,0.9)]" />
+              SOFTWARE · SYSTEMS · AUTOMATION
+            </div>
+            <h1 className="mt-6 max-w-[16ch] text-5xl font-extrabold leading-[1.04] tracking-[-0.055em] !text-white sm:text-6xl lg:text-6xl xl:text-[4.5rem] 2xl:text-[5rem]">
+              {set.hero_title || <>Smart software <span className="home-hero__headline-accent">for every business.</span></>}
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-200/85 sm:text-xl">
+              {set.hero_text || 'Manage operations, automate repetitive work and grow with practical software built around the way you run your business.'}
+            </p>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link to="/solutions" className="home-hero__primary">Explore solutions <span aria-hidden="true">→</span></Link>
+              <Link to="/demo" className="home-hero__secondary">Book a free demo</Link>
+            </div>
+            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-300/80">
+              <span className="inline-flex items-center gap-2"><span className="text-teal">✓</span> Built around your workflow</span>
+              <span className="inline-flex items-center gap-2"><span className="text-teal">✓</span> Practical business solutions</span>
             </div>
           </div>
-          <DashboardPreview />
+          <div className="home-hero__visual relative mx-auto w-full max-w-[590px] lg:mx-0 lg:ml-auto">
+            <div className="home-hero__orbit home-hero__orbit--outer" aria-hidden="true" />
+            <div className="home-hero__orbit home-hero__orbit--inner" aria-hidden="true" />
+            <div className="home-hero__preview-frame">
+              <div className="home-hero__frame-top">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-teal" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-white/70" />
+                </div>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">Connected business tools</span>
+                <span className="rounded-full border border-teal/20 bg-teal/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wider text-teal">Concept</span>
+              </div>
+              <DashboardPreview />
+            </div>
+            <div className="home-hero__visual-caption"><span /> An illustration of connected business workflows</div>
+          </div>
+          <div className="home-hero__arabic-strip lg:col-span-2" lang="ar" dir="rtl">
+            <span className="home-hero__arabic-ornament" aria-hidden="true">✦</span>
+            <p>نبحر بأعمالك نحو آفاق رقمية جديدة</p>
+            <span className="home-hero__arabic-ornament" aria-hidden="true">✦</span>
+          </div>
         </div>
-        <Wave className="absolute bottom-0 drift" fill="#F4F1EA" />
+        <div className="home-hero__bottom-line" aria-hidden="true" />
+        <Wave className="absolute bottom-0 z-10 h-8 sm:h-10" fill="#F4F1EA" />
       </section>
 
       <Section title="Solutions for the way your industry works" intro="Pick your industry to see the problems we solve and the features available.">
@@ -69,6 +106,8 @@ export default function Home() {
           </div>
         </Section>
       )}
+
+      <ClientShowcase />
 
       <Section title="How we work with you">
         <ol className="grid gap-6 md:grid-cols-4">

@@ -1,4 +1,5 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
 import { useApi } from '../../lib/api'
 import { Seo } from '../../components/Seo'
 import { Badge } from '../../components/ui'
@@ -130,24 +131,125 @@ export function PlanGrid({ plans }: { plans: any[] }) {
 
 export function Services() {
   const { data, loading, error } = useApi<{ items: any[] }>('/api/services')
+  const { data: settings } = useApi<{ settings: any }>('/api/settings')
+  const [query, setQuery] = useState('')
+  const [category, setCategory] = useState('')
+  const items = (data?.items ?? []).filter((s) => {
+    const matchesQuery = `${s.name} ${s.short ?? ''} ${s.category ?? ''}`.toLowerCase().includes(query.toLowerCase())
+    return matchesQuery && (!category || s.category === category)
+  })
+  const categories = [...new Set((data?.items ?? []).map((s) => s.category).filter(Boolean))] as string[]
+  const groupedItems = items.reduce<Record<string, any[]>>((groups, service) => {
+    const name = service.category || 'More services'
+    if (!groups[name]) groups[name] = []
+    groups[name].push(service)
+    return groups
+  }, {})
   return (
     <>
-      <Seo title="Services" description="Custom software, POS and ERP development, automation and support." />
-      <PageHead title="Services" intro="From a single automation to a full business system." />
+      <Seo title="Services" description="Explore Sindbad Solution services and contact us to discuss your requirements." />
+      <PageHead title="Services" intro={settings?.settings?.service_intro_message || 'Explore our service catalog. Contact us to discuss your requirements.'} />
       <Section>
         <State loading={loading} error={error} empty={!data?.items.length} emptyText="No services published yet." />
-        <div className="grid gap-6 md:grid-cols-2">
-          {data?.items.map((s) => (
-            <article id={s.slug} key={s.id} className="rounded-xl border border-navy-900/10 bg-white p-7">
-              <h2 className="text-xl font-bold">{s.name}</h2><p className="mt-2 text-ink/80">{s.description}</p>
-              {s.benefits?.length > 0 && <div className="mt-4"><Checks items={s.benefits} /></div>}
-              {s.deliverables?.length > 0 && <p className="mt-4 text-sm text-ink/70"><b>Deliverables:</b> {s.deliverables.join(', ')}</p>}
-              <Link to={`/contact?interest=${encodeURIComponent(s.name)}`} className="btn-outline mt-5">Enquire about this service</Link>
-            </article>
-          ))}
-        </div>
+        {!!data?.items.length && <div className="mb-8 flex flex-wrap gap-3">
+          <label className="sr-only" htmlFor="service-search">Search services</label>
+          <input id="service-search" className="field max-w-sm" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search services" />
+          <label className="sr-only" htmlFor="service-category">Filter by category</label>
+          <select id="service-category" className="field max-w-xs" value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value="">All categories</option>{categories.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>}
+        {Object.keys(groupedItems).length ? Object.entries(groupedItems).map(([group, groupServices]) => (
+          <section key={group} className="mb-12 last:mb-0">
+            <h2 className="mb-5 text-2xl font-bold">{group}</h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {groupServices.map((s) => (
+                <Link id={s.slug} key={s.id} to={`/services/${s.slug}`} className="group overflow-hidden rounded-xl border border-navy-900/10 bg-white transition hover:border-teal">
+                  {s.image && <img src={s.image} alt="" loading="lazy" className="h-48 w-full object-cover" />}
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold group-hover:text-teal-700">{s.name}</h3>
+                    <p className="mt-3 line-clamp-3 text-ink/75">{s.short || s.description || settings?.settings?.service_intro_message || 'Contact us to discuss your requirements.'}</p>
+                    {s.featured && <span className="mt-3 inline-block rounded-full bg-amber/30 px-3 py-1 text-xs font-semibold">Featured</span>}
+                    <span className="mt-4 block font-semibold text-teal-700">Learn more →</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )) : data?.items.length ? <p className="rounded-xl bg-white p-6 text-ink/75">No services match these filters.</p> : null}
       </Section>
-      <CtaBand />
+      <CtaBand title="Need a service tailored to your business?" text="Contact us to discuss your requirements." />
+    </>
+  )
+}
+
+function ServiceItems({ title, items, ordered = false }: { title: string; items?: string[]; ordered?: boolean }) {
+  if (!items?.length) return null
+  const List = ordered ? 'ol' : 'ul'
+  return <section className="mt-12">
+    <h2 className="text-2xl font-bold">{title}</h2>
+    <List className={ordered ? 'mt-4 list-decimal space-y-2 pl-6' : 'mt-4 space-y-2'}>
+      {items.map((item, index) => <li key={`${item}-${index}`} className="text-ink/80">{item}</li>)}
+    </List>
+  </section>
+}
+
+export function ServiceDetail() {
+  const { slug } = useParams()
+  const [search] = useSearchParams()
+  const previewId = search.get('preview')
+  const path = previewId ? `/api/admin/services/${encodeURIComponent(previewId)}` : `/api/services/${encodeURIComponent(slug ?? '')}`
+  const { data, loading, error } = useApi<{ item: any }>(path)
+  const { data: settings } = useApi<{ settings: any }>('/api/settings')
+  const { data: services } = useApi<{ items: any[] }>('/api/services')
+  const { data: products } = useApi<{ items: any[] }>('/api/products')
+  const { data: portfolio } = useApi<{ items: any[] }>('/api/portfolio')
+  if (loading) return <State loading error={null} empty={false} emptyText="" />
+  if (error || !data?.item) return <NotFound />
+  const s = data.item
+  const fallback = settings?.settings?.service_intro_message || 'Service details are being prepared. Contact us to discuss your requirements.'
+  const serviceLinks = (services?.items ?? []).filter((item) => s.related_services?.includes(item.slug))
+  const productLinks = (products?.items ?? []).filter((item) => s.related_products?.includes(item.slug))
+  const caseStudies = (portfolio?.items ?? []).filter((item) => s.case_studies?.includes(item.slug))
+  return (
+    <>
+      <Seo title={s.seo_title || s.name} description={s.seo_description || s.short || fallback} image={s.og_image} />
+      {previewId && <div role="status" className="bg-amber px-4 py-2 text-center font-semibold text-navy-950">Draft preview — only administrators with access can view this page.</div>}
+      <div className="bg-navy-900 text-white">
+        {s.hero_image && <img src={s.hero_image} alt="" className="max-h-[28rem] w-full object-cover" />}
+        <div className="container-x py-14">
+          {s.category && <p className="font-semibold text-amber">{s.category}</p>}
+          <h1 className="mt-2 text-4xl font-extrabold !text-white md:text-5xl">{s.hero_heading || s.name}</h1>
+          <p className="mt-4 max-w-3xl whitespace-pre-line text-lg text-white/80">{s.hero_subheading || s.short || fallback}</p>
+          <Link to={`/contact?interest=${encodeURIComponent(s.name)}`} className="btn-amber mt-7">Contact Us to Discuss Your Requirements</Link>
+        </div>
+      </div>
+      <Section>
+        <article className="max-w-4xl">
+          {s.image && <img src={s.image} alt={`${s.name}`} loading="lazy" className="mb-8 max-h-[30rem] rounded-xl object-cover" />}
+          <p className="whitespace-pre-line text-lg leading-relaxed">{s.description || fallback}</p>
+          <ServiceItems title="Problems we can discuss" items={s.problems} />
+          <ServiceItems title="What we offer" items={s.offers} />
+          <ServiceItems title="Features and capabilities" items={s.features} />
+          <ServiceItems title="Benefits" items={s.benefits} />
+          <ServiceItems title="Industries served" items={s.industries} />
+          <ServiceItems title="Technologies and tools" items={s.technologies} />
+          <ServiceItems title="Delivery process" items={s.process} ordered />
+          <ServiceItems title="Project scope and deliverables" items={s.deliverables} />
+          <ServiceItems title="Engagement models" items={s.engagement_models} />
+        </article>
+      </Section>
+      {s.faqs?.length > 0 && <Section title="Frequently asked questions" tone="white"><Faqs items={s.faqs} /></Section>}
+      {caseStudies.length > 0 && <Section title="Related projects" tone="white"><div className="grid gap-5 md:grid-cols-2">
+        {caseStudies.map((item) => <article key={item.id} className="rounded-xl border border-navy-900/10 p-6"><h3 className="text-xl font-bold">{item.name}</h3><p className="mt-2">{item.description}</p></article>)}
+      </div></Section>}
+      {(serviceLinks.length > 0 || productLinks.length > 0) && <Section title="Related services and products">
+        <div className="flex flex-wrap gap-3">
+          {serviceLinks.map((item) => <Link key={item.id} className="btn-outline" to={`/services/${item.slug}`}>{item.name}</Link>)}
+          {productLinks.map((item) => <Link key={item.id} className="btn-outline" to={`/products/${item.slug}`}>{item.name}</Link>)}
+        </div>
+      </Section>}
+      <CtaBand title={s.cta_heading || `Discuss ${s.name} with us`} text={s.cta_description || 'Contact us to discuss your requirements.'} />
     </>
   )
 }

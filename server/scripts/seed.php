@@ -6,8 +6,9 @@ use App\{Db, Env};
 Env::load(__DIR__ . '/../.env');
 
 // ---- Indexes ----
-foreach (['products', 'industries', 'services', 'plans', 'posts', 'portfolio'] as $c)
+foreach (['products', 'industries', 'services', 'pages', 'plans', 'posts', 'portfolio'] as $c)
     Db::col($c)->createIndex(['slug' => 1], ['unique' => true, 'sparse' => true]);
+Db::col('clients')->createIndex(['active' => 1, 'show_on_homepage' => 1, 'order' => 1]);
 Db::col('users')->createIndex(['email' => 1], ['unique' => true]);
 Db::col('leads')->createIndex(['created_at' => -1]); Db::col('leads')->createIndex(['status' => 1]);
 Db::col('demos')->createIndex(['created_at' => -1]); Db::col('demos')->createIndex(['status' => 1]);
@@ -29,7 +30,55 @@ Db::col('settings')->updateOne(['_id' => 'site'], ['$setOnInsert' => [
     'company_name' => 'Sindbad Solution', 'tagline' => 'We sail your business toward new digital horizons',
     'hero_title' => 'Smart software for every business.',
     'hero_text' => 'Manage operations, automate repetitive work and grow with practical software built around the way you run your business.',
-    'description' => 'Sindbad Solution builds business software, POS and ERP systems and automation.', 'currency' => 'USD',
+    'description' => 'Sindbad Solution builds business software, POS and ERP systems and automation.',
+    'service_intro_message' => 'Service details are being prepared. Contact us to discuss your requirements.',
+    'navigation' => [
+        ['label' => 'Home', 'path' => '/', 'enabled' => true, 'order' => 0],
+        ['label' => 'Products', 'path' => '/products', 'enabled' => true, 'order' => 1],
+        ['label' => 'Solutions', 'path' => '/solutions', 'enabled' => true, 'order' => 2],
+        ['label' => 'Services', 'path' => '/services', 'enabled' => true, 'order' => 3,
+            'children' => [['label' => 'All services', 'path' => '/services', 'enabled' => true]]],
+        ['label' => 'Pricing', 'path' => '/pricing', 'enabled' => true, 'order' => 4],
+        ['label' => 'Portfolio', 'path' => '/portfolio', 'enabled' => true, 'order' => 5],
+        ['label' => 'About Us', 'path' => '/about', 'enabled' => true, 'order' => 6],
+        ['label' => 'Blog', 'path' => '/blog', 'enabled' => true, 'order' => 7],
+        ['label' => 'Contact Us', 'path' => '/contact', 'enabled' => true, 'order' => 8],
+    ],
+    'footer_groups' => [
+        ['title' => 'Quick Links', 'links' => [
+            ['label' => 'About Us', 'path' => '/about', 'enabled' => true],
+            ['label' => 'Blog', 'path' => '/blog', 'enabled' => true],
+            ['label' => 'Careers', 'path' => '/careers', 'enabled' => true],
+            ['label' => 'Life at Sindbad', 'path' => '/life-at-sindbad', 'enabled' => true],
+            ['label' => 'Contact Us', 'path' => '/contact', 'enabled' => true],
+        ]],
+        ['title' => 'Explore', 'links' => [
+            ['label' => 'Products', 'path' => '/products', 'enabled' => true],
+            ['label' => 'Solutions', 'path' => '/solutions', 'enabled' => true],
+            ['label' => 'Services', 'path' => '/services', 'enabled' => true],
+            ['label' => 'Pricing', 'path' => '/pricing', 'enabled' => true],
+            ['label' => 'About', 'path' => '/about', 'enabled' => true],
+            ['label' => 'Contact', 'path' => '/contact', 'enabled' => true],
+            ['label' => 'Portfolio', 'path' => '/portfolio', 'enabled' => true],
+            ['label' => 'Blog', 'path' => '/blog', 'enabled' => true],
+        ]],
+    ],
+    'client_showcase' => [
+        'enabled' => true,
+        'heading' => 'Trusted by Businesses That Choose Innovation',
+        'description' => 'We partner with businesses across industries to deliver reliable software, technology, and automation solutions.',
+        'direction' => 'right_to_left',
+        'speed' => 36,
+        'logo_height' => 64,
+        'spacing' => 48,
+        'background' => 'white',
+        'grayscale' => true,
+        'pause_on_hover' => true,
+        'edge_fade' => true,
+        'rows' => 1,
+        'max_clients' => 20,
+    ],
+    'currency' => 'USD',
 ]], ['upsert' => true]);
 
 // ---- DEMO content (clearly marked; edit or delete in the admin panel) ----
@@ -58,6 +107,39 @@ foreach ($services as $i => $n) {
     Db::col('services')->updateOne(['slug' => $slug], ['$setOnInsert' => [
         'name' => $n, 'slug' => $slug, 'description' => 'DEMO CONTENT — describe this service.', 'benefits' => [], 'deliverables' => [],
         'published' => true, 'order' => $i, 'created_at' => Db::now(), 'updated_at' => Db::now(),
+    ]], ['upsert' => true]);
+}
+$serviceCatalog = [
+    ['Cloud Infrastructure Services', 'cloud-infrastructure-services', 'Cloud & Infrastructure'],
+    ['Custom Software & Product Development', 'custom-software-product-development', 'Software Development'],
+    ['Digital Marketing', 'digital-marketing-services', 'Marketing & Growth'],
+    ['CDN Services', 'cdn-services', 'Cloud & Performance'],
+    ['AI/ML Solutions', 'ai-ml-solutions', 'AI & Automation'],
+    ['Blockchain Development', 'blockchain-development', 'Emerging Technologies'],
+    ['EBS ERP Solution', 'ebs-erp-solution', 'Enterprise Software'],
+    ['Business Automation Services', 'business-automation', 'Automation'],
+    ['POS & Business Management Software', 'pos-business-management', 'Business Management'],
+    ['API Development & Integration', 'api-development-integration', 'Software Development'],
+];
+foreach ($serviceCatalog as $i => [$name, $slug, $category]) {
+    Db::col('services')->updateOne(['slug' => $slug], ['$setOnInsert' => [
+        'name' => $name, 'slug' => $slug, 'category' => $category, 'short' => '',
+        'description' => '', 'benefits' => [], 'deliverables' => [], 'features' => [], 'faqs' => [],
+        'status' => 'published', 'published' => true, 'featured' => false,
+        'menu_visible' => true, 'footer_visible' => true, 'order' => $i,
+        'created_at' => Db::now(), 'updated_at' => Db::now(),
+    ]], ['upsert' => true]);
+}
+$managedPages = [
+    ['About Us', 'about'],
+    ['Careers', 'careers'],
+    ['Life at Sindbad', 'life-at-sindbad'],
+];
+foreach ($managedPages as $i => [$title, $slug]) {
+    Db::col('pages')->updateOne(['slug' => $slug], ['$setOnInsert' => [
+        'name' => $title, 'title' => $title, 'slug' => $slug,
+        'short' => '', 'content' => '', 'published' => true, 'order' => $i,
+        'created_at' => Db::now(), 'updated_at' => Db::now(),
     ]], ['upsert' => true]);
 }
 Db::col('products')->updateOne(['slug' => 'genz-pizza'], ['$setOnInsert' => [

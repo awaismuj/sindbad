@@ -1,25 +1,83 @@
-import { useState } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, Outlet } from 'react-router-dom'
 import { useApi } from '../lib/api'
 
-const nav = [['Products', '/products'], ['Solutions', '/solutions'], ['Services', '/services'], ['Pricing', '/pricing'], ['About', '/about'], ['Contact', '/contact']]
+export const DEFAULT_NAVIGATION = [
+  { label: 'Home', path: '/', enabled: true, order: 0 },
+  { label: 'Products', path: '/products', enabled: true, order: 1 },
+  { label: 'Solutions', path: '/solutions', enabled: true, order: 2 },
+  { label: 'Services', path: '/services', enabled: true, order: 3, children: [{ label: 'All services', path: '/services', enabled: true }] },
+  { label: 'Pricing', path: '/pricing', enabled: true, order: 4 },
+  { label: 'Portfolio', path: '/portfolio', enabled: true, order: 5 },
+  { label: 'About Us', path: '/about', enabled: true, order: 6 },
+  { label: 'Blog', path: '/blog', enabled: true, order: 7 },
+  { label: 'Contact Us', path: '/contact', enabled: true, order: 8 },
+]
+export const DEFAULT_FOOTER_GROUPS = [
+  { title: 'Quick Links', links: [
+    { label: 'About Us', path: '/about', enabled: true }, { label: 'Blog', path: '/blog', enabled: true },
+    { label: 'Careers', path: '/careers', enabled: true }, { label: 'Life at Sindbad', path: '/life-at-sindbad', enabled: true },
+    { label: 'Contact Us', path: '/contact', enabled: true },
+  ] },
+  { title: 'Explore', links: [
+    { label: 'Products', path: '/products', enabled: true }, { label: 'Solutions', path: '/solutions', enabled: true },
+    { label: 'Services', path: '/services', enabled: true }, { label: 'Pricing', path: '/pricing', enabled: true },
+    { label: 'About', path: '/about', enabled: true }, { label: 'Contact', path: '/contact', enabled: true },
+    { label: 'Portfolio', path: '/portfolio', enabled: true }, { label: 'Blog', path: '/blog', enabled: true },
+  ] },
+]
 
 export function Layout() {
   const [open, setOpen] = useState(false)
   const { data } = useApi<{ settings: any }>('/api/settings')
+  const { data: services } = useApi<{ items: any[] }>('/api/services')
   const s = data?.settings ?? {}
-  useLocation()
+  const allServices = services?.items ?? []
+  const serviceLinks = allServices.filter((service) => service.menu_visible)
+  const navigation = (Array.isArray(s.navigation) ? s.navigation : DEFAULT_NAVIGATION)
+    .filter((item: any) => item.enabled !== false).sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0))
+  const footerGroups = Array.isArray(s.footer_groups) ? s.footer_groups : DEFAULT_FOOTER_GROUPS
+  const desktopNavigation = navigation.filter((item: any) => item.desktop_visible !== false)
+  const mobileNavigation = navigation.filter((item: any) => item.mobile_visible !== false)
+  const serviceChildren = serviceLinks.map((service) => ({ label: service.name, path: `/services/${service.slug}`, enabled: true }))
+  const link = (item: any, className: string, onClick?: () => void) => /^https:\/\//i.test(item.path)
+    ? <a href={item.path} key={`${item.label}-${item.path}`} rel="noopener noreferrer" className={className} onClick={onClick}>{item.label}</a>
+    : <Link to={item.path} key={`${item.label}-${item.path}`} className={className} onClick={onClick}>{item.label}</Link>
+  const menuItem = (item: any, mobile = false) => {
+    const children = [...(Array.isArray(item.children) ? item.children.filter((child: any) =>
+      child.enabled !== false && (mobile ? child.mobile_visible !== false : child.desktop_visible !== false)) : []),
+      ...(item.path === '/services' ? serviceChildren : [])]
+    if (children.length) return mobile
+      ? <details key={item.path} className="rounded-lg">
+          <summary className="cursor-pointer rounded-lg px-3 py-3 font-semibold hover:bg-white/10">{item.label}</summary>
+          <div className="pb-2">{children.map((child: any) => link(child, 'block rounded-lg px-6 py-2 text-sm hover:bg-white/10', () => setOpen(false)))}</div>
+        </details>
+      : <details key={item.path} className="group relative">
+          <summary className="cursor-pointer list-none text-sm font-semibold hover:text-teal">{item.label} <span aria-hidden="true">⌄</span></summary>
+          <div className="absolute left-0 top-full z-50 mt-2 max-h-[70vh] w-72 overflow-y-auto rounded-xl border border-white/10 bg-navy-900 p-2 shadow-xl">
+            {link(item, 'block rounded-lg px-3 py-2 font-semibold text-amber hover:bg-white/10')}
+            {children.map((child: any) => link(child, 'block rounded-lg px-3 py-2 text-sm hover:bg-white/10'))}
+          </div>
+        </details>
+    return link(item, mobile
+      ? 'rounded-lg px-3 py-3 font-semibold hover:bg-white/10'
+      : 'text-sm font-semibold hover:text-teal', mobile ? () => setOpen(false) : undefined)
+  }
+  useEffect(() => {
+    const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
+    if (favicon) favicon.href = s.favicon_url || '/favicon.png'
+  }, [s.favicon_url])
   return (
     <>
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-amber focus:p-3">Skip to content</a>
       <header className="sticky top-0 z-40 bg-navy-900/95 text-white backdrop-blur">
         <div className="container-x flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
-            <img src="/brand/logo.png" alt="" width={40} height={40} className="rounded-full" />
-            <span className="font-display text-lg font-bold">Sindbad <span className="text-amber">Solution</span></span>
+            <img src={s.logo_url || '/brand/logo.png'} alt="" width={40} height={40} className="rounded-full object-cover" />
+            <span className="font-display text-lg font-bold">{s.company_name || 'Sindbad Solution'}</span>
           </Link>
-          <nav aria-label="Main" className="hidden items-center gap-6 lg:flex">
-            {nav.map(([l, to]) => <NavLink key={to} to={to} className={({ isActive }) => `text-sm font-semibold hover:text-teal ${isActive ? 'text-teal' : ''}`}>{l}</NavLink>)}
+          <nav aria-label="Main" className="hidden items-center gap-4 lg:flex">
+            {desktopNavigation.map((item: any) => menuItem(item))}
             <Link to="/demo" className="btn-amber !py-2">Get a demo</Link>
           </nav>
           <button className="lg:hidden" aria-expanded={open} aria-label="Menu" onClick={() => setOpen(!open)}>
@@ -28,23 +86,28 @@ export function Layout() {
         </div>
         {open && (
           <nav aria-label="Mobile" className="container-x flex flex-col gap-1 pb-4 lg:hidden">
-            {nav.map(([l, to]) => <Link key={to} to={to} onClick={() => setOpen(false)} className="rounded-lg px-3 py-3 font-semibold hover:bg-white/10">{l}</Link>)}
+            {mobileNavigation.map((item: any) => menuItem(item, true))}
             <Link to="/demo" onClick={() => setOpen(false)} className="btn-amber mt-2">Get a demo</Link>
           </nav>
         )}
       </header>
       <main id="main"><Outlet /></main>
       <footer className="bg-navy-950 text-white/80">
-        <div className="container-x grid gap-10 py-14 md:grid-cols-4">
+        <div className="container-x grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-6">
           <div className="md:col-span-2">
-            <img src="/brand/logo.png" alt="Sindbad Solution" width={72} height={72} className="rounded-full" />
+            <img src={s.logo_url || '/brand/logo.png'} alt={s.company_name || 'Sindbad Solution'} width={72} height={72} className="rounded-full object-cover" />
             <p className="mt-4 max-w-sm">{s.description || 'Business software, POS and ERP systems and automation.'}</p>
             <p className="mt-2 font-arabic text-amber">نبحر بأعمالك نحو آفاق رقمية جديدة</p>
           </div>
+          {footerGroups.filter((group: any) => group.enabled !== false).sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0)).map((group: any) => <div key={group.title}>
+            <h3 className="font-display text-white">{group.title}</h3>
+            <ul className="mt-3 space-y-2">{(group.links ?? []).filter((item: any) => item.enabled !== false).sort((a: any, b: any) => (a.order ?? 0) - (b.order ?? 0)).map((item: any) =>
+              <li key={`${item.label}-${item.path}`}>{link(item, 'hover:text-teal')}</li>)}</ul>
+          </div>)}
           <div>
-            <h3 className="font-display text-white">Explore</h3>
-            <ul className="mt-3 space-y-2">{nav.map(([l, to]) => <li key={to}><Link className="hover:text-teal" to={to}>{l}</Link></li>)}
-              <li><Link className="hover:text-teal" to="/portfolio">Portfolio</Link></li><li><Link className="hover:text-teal" to="/blog">Blog</Link></li></ul>
+            <h3 className="font-display text-white">Our Services</h3>
+            <ul className="mt-3 space-y-2">{allServices.filter((service) => service.footer_visible).map((service) =>
+              <li key={service.id}><Link className="hover:text-teal" to={`/services/${service.slug}`}>{service.name}</Link></li>)}</ul>
           </div>
           <div>
             <h3 className="font-display text-white">Contact</h3>
@@ -58,7 +121,7 @@ export function Layout() {
             </ul>
           </div>
         </div>
-        <div className="border-t border-white/10 py-5 text-center text-sm">© {new Date().getFullYear()} {s.company_name || 'Sindbad Solution'}. All rights reserved.</div>
+        <div className="border-t border-white/10 py-5 text-center text-sm">{s.copyright_text || `© ${new Date().getFullYear()} ${s.company_name || 'Sindbad Solution'}. All rights reserved.`}</div>
       </footer>
     </>
   )
