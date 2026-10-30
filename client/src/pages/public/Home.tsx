@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useApi } from '../../lib/api'
 import { Seo } from '../../components/Seo'
 import { DashboardPreview } from '../../components/DashboardPreview'
-import { Badge, Wave } from '../../components/ui'
+import { Badge } from '../../components/ui'
 import { Section, Faqs, CtaBand } from '../../components/bits'
 import { ClientShowcase } from '../../components/ClientShowcase'
 
@@ -18,6 +18,7 @@ const benefits = [
   ['Reports you can trust', 'See what sold, what is running low and what needs attention.'],
   ['Room to grow', 'Add branches, users and modules without starting over.'],
 ]
+const Arrow = () => <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5" /></svg>
 
 export default function Home() {
   const { data: s } = useApi<{ settings: any }>('/api/settings')
@@ -30,64 +31,44 @@ export default function Home() {
   return (
     <>
       <Seo description={set.seo_description || set.hero_text} title={set.seo_title} />
-      <section className="home-hero relative isolate overflow-hidden text-white">
-        <div className="home-hero__glow home-hero__glow--one" aria-hidden="true" />
-        <div className="home-hero__glow home-hero__glow--two" aria-hidden="true" />
-        <div className="home-hero__grid" aria-hidden="true" />
-        <div className="container-x relative grid min-h-[620px] items-center gap-14 pb-24 pt-16 lg:min-h-[690px] lg:grid-cols-[1.02fr_0.98fr] lg:gap-16 lg:pb-28 lg:pt-20">
-          <div className="home-hero__copy max-w-2xl">
-            <div className="mt-7 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-2 text-xs font-semibold tracking-wide text-white/80 shadow-lg shadow-black/10 backdrop-blur">
-              <span className="h-2 w-2 rounded-full bg-teal shadow-[0_0_12px_rgba(46,196,182,0.9)]" />
-              SOFTWARE · SYSTEMS · AUTOMATION
-            </div>
-            <h1 className="mt-6 max-w-[16ch] text-5xl font-extrabold leading-[1.04] tracking-[-0.055em] !text-white sm:text-6xl lg:text-6xl xl:text-[4.5rem] 2xl:text-[5rem]">
-              {set.hero_title || <>Smart software <span className="home-hero__headline-accent">for every business.</span></>}
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-200/85 sm:text-xl">
+      <section className="hero" aria-label="Introduction">
+        <div className="hero__copy">
+          <div className="hero__reveal max-w-xl">
+            <h1 className="text-4xl font-bold leading-[1.08] sm:text-5xl xl:text-[3.6rem]">{set.hero_title || 'Smart software for every business.'}</h1>
+            <p className="mt-6 max-w-lg text-lg leading-8 text-ink/75 sm:text-xl">
               {set.hero_text || 'Manage operations, automate repetitive work and grow with practical software built around the way you run your business.'}
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <Link to="/solutions" className="home-hero__primary">Explore solutions <span aria-hidden="true">→</span></Link>
-              <Link to="/demo" className="home-hero__secondary">Book a free demo</Link>
+              <Link to="/solutions" className="btn-primary !px-6 !py-3.5 text-base">Explore solutions <Arrow /></Link>
+              <Link to="/demo" className="btn-outline !px-6 !py-3.5 text-base">Book a free demo</Link>
             </div>
-            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-300/80">
-              <span className="inline-flex items-center gap-2"><span className="text-teal">✓</span> Built around your workflow</span>
-              <span className="inline-flex items-center gap-2"><span className="text-teal">✓</span> Practical business solutions</span>
-            </div>
-          </div>
-          <div className="home-hero__visual relative mx-auto w-full max-w-[590px] lg:mx-0 lg:ml-auto">
-            <div className="home-hero__orbit home-hero__orbit--outer" aria-hidden="true" />
-            <div className="home-hero__orbit home-hero__orbit--inner" aria-hidden="true" />
-            <div className="home-hero__preview-frame">
-              <div className="home-hero__frame-top">
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-teal" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-white/70" />
-                </div>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">Connected business tools</span>
-                <span className="rounded-full border border-teal/20 bg-teal/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wider text-teal">Concept</span>
+            <div className="mt-12 flex items-center gap-4 border-t border-sea-100 pt-6">
+              <img src={set.logo_url || '/brand/logo.png'} alt="" width={44} height={44} className="rounded-full" />
+              <div>
+                <p className="font-display text-sm font-semibold text-navy-900">{set.tagline || 'We sail your business toward new digital horizons'}</p>
+                <p className="font-arabic text-base text-sea-700" lang="ar" dir="rtl">نبحر بأعمالك نحو آفاق رقمية جديدة</p>
               </div>
-              <DashboardPreview />
             </div>
-            <div className="home-hero__visual-caption"><span /> An illustration of connected business workflows</div>
-          </div>
-          <div className="home-hero__arabic-strip lg:col-span-2" lang="ar" dir="rtl">
-            <span className="home-hero__arabic-ornament" aria-hidden="true">✦</span>
-            <p>نبحر بأعمالك نحو آفاق رقمية جديدة</p>
-            <span className="home-hero__arabic-ornament" aria-hidden="true">✦</span>
           </div>
         </div>
-        <div className="home-hero__bottom-line" aria-hidden="true" />
-        <Wave className="absolute bottom-0 z-10 h-8 sm:h-10" fill="#F4F1EA" />
+        <div className="hero__blue">
+          <svg className="absolute inset-y-0 left-0 hidden h-full w-14 lg:block" viewBox="0 0 56 800" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0H18C58 130 -8 270 22 400S56 650 18 800H0Z" fill="#fff" /></svg>
+          <svg className="absolute inset-x-0 top-0 h-7 w-full lg:hidden" viewBox="0 0 800 28" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0H800V10C660 32 540 -2 400 12S130 30 0 10Z" fill="#fff" /></svg>
+          <div className="hero__grid" aria-hidden="true" />
+          <div className="hero__reveal relative w-full" style={{ animationDelay: '120ms' }}><DashboardPreview /></div>
+        </div>
       </section>
+
+      <ClientShowcase />
 
       <Section title="Solutions for the way your industry works" intro="Pick your industry to see the problems we solve and the features available.">
         {ind?.items.length ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-px overflow-hidden rounded-2xl border border-sea-100 bg-sea-100 sm:grid-cols-2 lg:grid-cols-3">
             {ind.items.map((i) => (
-              <Link key={i.id} to={`/solutions/${i.slug}`} className="rounded-xl border border-navy-900/10 bg-white p-6 transition-colors hover:border-teal">
-                <h3 className="text-lg font-bold">{i.name}</h3><p className="mt-2 text-ink/75">{i.headline}</p>
+              <Link key={i.id} to={`/solutions/${i.slug}`} className="group flex flex-col bg-white p-7 transition-colors hover:bg-sea-50">
+                <h3 className="text-lg font-semibold">{i.name}</h3>
+                <p className="mt-2 flex-1 text-ink/70">{i.headline}</p>
+                <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-sea-700 transition-transform group-hover:translate-x-1">See the solution <Arrow /></span>
               </Link>
             ))}
           </div>
@@ -98,37 +79,46 @@ export default function Home() {
         <Section title="Featured products" tone="white">
           <div className="grid gap-6 md:grid-cols-2">
             {featured.map((p) => (
-              <Link key={p.id} to={`/products/${p.slug}`} className="rounded-xl bg-cream p-7 hover:ring-2 hover:ring-teal">
-                <div className="flex items-center justify-between"><h3 className="text-xl font-bold">{p.name}</h3><Badge value={p.status} /></div>
-                <p className="mt-3 text-ink/80">{p.short}</p>
+              <Link key={p.id} to={`/products/${p.slug}`} className="card group p-7 transition hover:-translate-y-0.5 hover:border-sea-500">
+                <div className="flex items-center justify-between gap-3"><h3 className="text-xl font-semibold">{p.name}</h3><Badge value={p.status} /></div>
+                <p className="mt-3 text-ink/75">{p.short}</p>
               </Link>
             ))}
           </div>
         </Section>
       )}
 
-      <ClientShowcase />
-
-      <Section title="How we work with you">
-        <ol className="grid gap-6 md:grid-cols-4">
+      <Section title="How we work with you" tone={featured.length ? 'light' : 'white'}>
+        <ol className="relative grid gap-8 md:grid-cols-4">
+          <span className="absolute left-0 right-0 top-[19px] hidden h-px bg-sea-200 md:block" aria-hidden="true" />
           {steps.map(([t, d], i) => (
-            <li key={t} className="border-t-4 border-teal pt-4"><span className="font-display text-sm font-bold text-teal-700">Step {i + 1}</span>
-              <h3 className="mt-1 text-lg font-bold">{t}</h3><p className="mt-2 text-ink/75">{d}</p></li>
+            <li key={t} className="relative">
+              <span className="relative grid h-10 w-10 place-items-center rounded-full bg-sea-600 font-display text-sm font-semibold text-white ring-8 ring-white">{i + 1}</span>
+              <h3 className="mt-5 text-lg font-semibold">{t}</h3><p className="mt-2 text-ink/70">{d}</p>
+            </li>
           ))}
         </ol>
       </Section>
 
       <Section title="What changes when your tools work together" tone="dark">
-        <div className="grid gap-8 md:grid-cols-2">
-          {benefits.map(([t, d]) => <div key={t}><h3 className="text-xl font-bold !text-amber">{t}</h3><p className="mt-2 text-white/80">{d}</p></div>)}
+        <div className="grid gap-x-12 gap-y-9 md:grid-cols-2">
+          {benefits.map(([t, d]) => (
+            <div key={t} className="border-l-2 border-teal pl-5"><h3 className="text-xl font-semibold !text-white">{t}</h3><p className="mt-2 text-white/80">{d}</p></div>
+          ))}
         </div>
       </Section>
 
       <Section title="Business automation and custom development" intro="If a ready-made product does not fit, we build around your process.">
-        <div className="grid gap-3 sm:grid-cols-2">
-          {svc?.items.slice(0, 6).map((x) => <Link key={x.id} to={`/services#${x.slug}`} className="rounded-lg bg-white px-5 py-4 font-semibold hover:text-teal-700">{x.name}</Link>)}
-        </div>
-        <Link to="/services" className="btn-outline mt-8">See all services</Link>
+        <ul className="grid gap-x-10 md:grid-cols-2">
+          {svc?.items.slice(0, 6).map((x) => (
+            <li key={x.id} className="border-b border-sea-100">
+              <Link to={`/services/${x.slug}`} className="group flex items-center justify-between gap-4 py-4 text-lg font-semibold text-navy-900 transition-colors hover:text-sea-700">
+                {x.name}<span className="text-sea-500 transition-transform group-hover:translate-x-1"><Arrow /></span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <Link to="/services" className="btn-outline mt-9">See all services</Link>
       </Section>
 
       {faq?.items.length ? <Section title="Frequently asked questions" tone="white"><Faqs items={faq.items} /></Section> : null}

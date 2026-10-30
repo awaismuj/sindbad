@@ -117,8 +117,8 @@ export function ClientShowcase() {
   const rows = Math.max(1, Math.min(config.rows, clients.length))
   const items = Array.from({ length: rows }, (_, row) => clients.filter((_, index) => index % rows === row))
   const backgrounds = {
-    light: 'bg-navy-900 text-white',
-    white: 'bg-white text-ink',
+    light: 'band-blue',
+    white: 'bg-white text-ink border-b border-sea-100',
     cream: 'bg-cream text-ink',
     navy: 'bg-navy-950 text-white',
   }

@@ -17,7 +17,7 @@ export function Solutions() {
         <State loading={loading} error={error} empty={!data?.items.length} emptyText="No industries published yet." />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {data?.items.map((i) => (
-            <Link key={i.id} to={`/solutions/${i.slug}`} className="rounded-xl border border-navy-900/10 bg-white p-6 hover:border-teal">
+            <Link key={i.id} to={`/solutions/${i.slug}`} className="card p-6 transition hover:-translate-y-0.5 hover:border-sea-500">
               <h2 className="text-lg font-bold">{i.name}</h2><p className="mt-2 text-ink/75">{i.headline}</p>
             </Link>
           ))}
@@ -65,7 +65,7 @@ export function Products() {
         <State loading={loading} error={error} empty={!data?.items.length} emptyText="No products published yet." />
         <div className="grid gap-6 md:grid-cols-2">
           {data?.items.map((p) => (
-            <Link key={p.id} to={`/products/${p.slug}`} className="rounded-xl border border-navy-900/10 bg-white p-7 hover:border-teal">
+            <Link key={p.id} to={`/products/${p.slug}`} className="card p-7 transition hover:-translate-y-0.5 hover:border-sea-500">
               <div className="flex items-start justify-between gap-3"><h2 className="text-xl font-bold">{p.name}</h2><Badge value={p.status} /></div>
               <p className="mt-1 text-sm text-ink/60">{p.category}</p><p className="mt-3 text-ink/80">{p.short}</p>
             </Link>
@@ -114,7 +114,7 @@ export function PlanGrid({ plans }: { plans: any[] }) {
   return (
     <div className="grid gap-6 md:grid-cols-3">
       {plans.map((pl) => (
-        <div key={pl.id} className="flex flex-col rounded-xl border border-navy-900/10 bg-white p-7">
+        <div key={pl.id} className="flex flex-col card p-7">
           <h3 className="text-xl font-bold">{pl.name}</h3>
           <p className="mt-3 font-display text-3xl font-bold text-navy-900">
             {pl.contact_sales || pl.price == null ? 'Contact us for pricing' : <>{money(pl.price, pl.currency || 'USD')} <span className="text-base font-normal text-ink/60">{INTERVAL[pl.interval] ?? ''}</span></>}
@@ -164,13 +164,13 @@ export function Services() {
             <h2 className="mb-5 text-2xl font-bold">{group}</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {groupServices.map((s) => (
-                <Link id={s.slug} key={s.id} to={`/services/${s.slug}`} className="group overflow-hidden rounded-xl border border-navy-900/10 bg-white transition hover:border-teal">
+                <Link id={s.slug} key={s.id} to={`/services/${s.slug}`} className="group overflow-hidden card transition transition hover:-translate-y-0.5 hover:border-sea-500">
                   {s.image && <img src={s.image} alt="" loading="lazy" className="h-48 w-full object-cover" />}
                   <div className="p-6">
-                    <h3 className="text-xl font-bold group-hover:text-teal-700">{s.name}</h3>
+                    <h3 className="text-xl font-bold group-hover:text-sea-700">{s.name}</h3>
                     <p className="mt-3 line-clamp-3 text-ink/75">{s.short || s.description || settings?.settings?.service_intro_message || 'Contact us to discuss your requirements.'}</p>
                     {s.featured && <span className="mt-3 inline-block rounded-full bg-amber/30 px-3 py-1 text-xs font-semibold">Featured</span>}
-                    <span className="mt-4 block font-semibold text-teal-700">Learn more →</span>
+                    <span className="mt-4 block font-semibold text-sea-700">Learn more →</span>
                   </div>
                 </Link>
               ))}
@@ -215,11 +215,11 @@ export function ServiceDetail() {
     <>
       <Seo title={s.seo_title || s.name} description={s.seo_description || s.short || fallback} image={s.og_image} />
       {previewId && <div role="status" className="bg-amber px-4 py-2 text-center font-semibold text-navy-950">Draft preview — only administrators with access can view this page.</div>}
-      <div className="bg-navy-900 text-white">
+      <div className="band-blue">
         {s.hero_image && <img src={s.hero_image} alt="" className="max-h-[28rem] w-full object-cover" />}
         <div className="container-x py-14">
           {s.category && <p className="font-semibold text-amber">{s.category}</p>}
-          <h1 className="mt-2 text-4xl font-extrabold !text-white md:text-5xl">{s.hero_heading || s.name}</h1>
+          <h1 className="mt-2 text-4xl font-bold !text-white md:text-5xl">{s.hero_heading || s.name}</h1>
           <p className="mt-4 max-w-3xl whitespace-pre-line text-lg text-white/80">{s.hero_subheading || s.short || fallback}</p>
           <Link to={`/contact?interest=${encodeURIComponent(s.name)}`} className="btn-amber mt-7">Contact Us to Discuss Your Requirements</Link>
         </div>

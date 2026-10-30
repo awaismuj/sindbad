@@ -34,7 +34,7 @@ export function Portfolio() {
         <State loading={loading} error={error} empty={!data?.items.length} emptyText="Our portfolio is being prepared. Case studies will appear here once projects are published." />
         <div className="grid gap-6 md:grid-cols-2">
           {data?.items.map((p) => (
-            <article key={p.id} className="rounded-xl border border-navy-900/10 bg-white p-7">
+            <article key={p.id} className="card p-7">
               {p.image && <img src={p.image} alt={`${p.name} screenshot`} loading="lazy" className="mb-4 rounded-lg" />}
               <h2 className="text-xl font-bold">{p.name}</h2><p className="text-sm text-ink/60">{p.industry}</p>
               <p className="mt-3">{p.description}</p>
@@ -68,9 +68,9 @@ export function Blog() {
         <State loading={loading} error={error} empty={!data?.items.length} emptyText={query ? 'No articles match your search.' : 'No articles published yet.'} />
         <div className="grid gap-6 md:grid-cols-3">
           {data?.items.map((p) => (
-            <Link key={p.id} to={`/blog/${p.slug}`} className="rounded-xl border border-navy-900/10 bg-white p-6 hover:border-teal">
+            <Link key={p.id} to={`/blog/${p.slug}`} className="card p-6 transition hover:-translate-y-0.5 hover:border-sea-500">
               {p.image && <img src={p.image} alt="" loading="lazy" className="mb-3 rounded-lg" />}
-              <h2 className="text-lg font-bold">{p.title}</h2>{p.category && <p className="text-sm text-teal-700">{p.category}</p>}
+              <h2 className="text-lg font-bold">{p.title}</h2>{p.category && <p className="text-sm text-sea-700">{p.category}</p>}
               <p className="mt-2 text-ink/75">{p.excerpt}</p>
             </Link>
           ))}
@@ -134,7 +134,7 @@ export function Contact() {
         <div className="grid gap-12 lg:grid-cols-3">
           <div className="lg:col-span-2"><LeadForm kind="leads" defaultInterest={sp.get('interest') ?? ''} /></div>
           <aside className="space-y-3">
-            {s.email && <p><b>Email:</b> <a className="text-teal-700 underline" href={`mailto:${s.email}`}>{s.email}</a></p>}
+            {s.email && <p><b>Email:</b> <a className="text-sea-700 underline" href={`mailto:${s.email}`}>{s.email}</a></p>}
             {s.phone && <p><b>Phone:</b> {s.phone}</p>}
             {s.whatsapp && <p><a className="btn-outline" href={`https://wa.me/${String(s.whatsapp).replace(/\D/g, '')}`}>Chat on WhatsApp</a></p>}
             {s.address && <p><b>Address:</b> {s.address}</p>}

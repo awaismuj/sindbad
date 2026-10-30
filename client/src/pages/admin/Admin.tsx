@@ -20,14 +20,14 @@ export function AdminLogin() {
     catch (x) { setErr(x instanceof ApiError ? x.message : 'Could not reach the server') } finally { setBusy(false) }
   }
   return (
-    <div className="grid min-h-screen place-items-center bg-navy-900 p-5">
-      <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-2xl bg-white p-8">
-        <img src="/brand/logo.png" alt="Sindbad Solution" width={72} className="mx-auto rounded-full" />
-        <h1 className="text-center text-2xl font-bold">Admin sign in</h1>
+    <div className="band-blue grid min-h-screen place-items-center p-5">
+      <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-2xl bg-white p-8 shadow-[0_30px_80px_-20px_rgba(4,20,60,.6)]">
+        <img src="/brand/logo.png" alt="Sindbad Solution" width={64} className="mx-auto rounded-full" />
+        <div className="text-center"><h1 className="text-2xl font-bold">Admin sign in</h1><p className="mt-1 text-sm text-ink/60">Manage your site content and enquiries.</p></div>
         <div><label className="label" htmlFor="email">Email</label><input id="email" name="email" type="email" required autoComplete="username" className="field" /></div>
         <div><label className="label" htmlFor="password">Password</label><input id="password" name="password" type="password" required autoComplete="current-password" className="field" /></div>
         {err && <ErrorBox message={err} />}
-        <button className="btn-primary w-full" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
+        <button className="btn-primary w-full !py-3" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
         <p className="text-center text-xs text-ink/60">Forgot your password? A Super Admin can reset it. Self-service email recovery needs SMTP, which is not set up yet.</p>
       </form>
     </div>
@@ -40,25 +40,32 @@ export function AdminLayout() {
   if (!data?.user) return <Navigate to="/admin/login" replace />
   const user = data.user
   const logout = async () => { await api('/api/auth/logout', { method: 'POST' }); reload() }
-  const link = 'block rounded-lg px-3 py-2 font-semibold hover:bg-white/10'
-  const active = ({ isActive }: { isActive: boolean }) => `${link} ${isActive ? 'bg-white/15 text-teal' : ''}`
+  const link = 'block rounded-lg border-l-2 border-transparent px-3 py-2 text-sm font-semibold text-white/75 transition-colors hover:bg-white/10 hover:text-white'
+  const active = ({ isActive }: { isActive: boolean }) => `${link} ${isActive ? '!border-teal !bg-white/10 !text-white' : ''}`
+  const group = (t: string) => <p className="mb-1 mt-5 px-3 text-xs font-semibold text-white/40 first:mt-0">{t}</p>
   return (
     <Ctx.Provider value={{ user, logout }}>
-      <div className="min-h-screen md:flex">
-        <aside className="bg-navy-900 p-4 text-white md:w-60 md:shrink-0">
-          <Link to="/" className="mb-4 flex items-center gap-2 font-display font-bold"><img src="/brand/logo.png" alt="" width={32} className="rounded-full" />Sindbad admin</Link>
-          <nav aria-label="Admin" className="flex flex-wrap gap-1 md:block">
+      <div className="min-h-screen bg-cream md:flex">
+        <aside className="bg-navy-900 p-4 text-white md:sticky md:top-0 md:h-screen md:w-64 md:shrink-0 md:overflow-y-auto">
+          <Link to="/" className="mb-5 flex items-center gap-2.5 px-1 font-display font-semibold"><img src="/brand/logo.png" alt="" width={34} className="rounded-full" />Sindbad admin</Link>
+          <nav aria-label="Admin">
+            {group('Overview')}
             <NavLink end to="/admin" className={active}>Dashboard</NavLink>
-            {can(user.role, 'sales') && <><NavLink to="/admin/leads" className={active}>Enquiries</NavLink><NavLink to="/admin/demos" className={active}>Demo requests</NavLink></>}
+            {can(user.role, 'sales') && <>{group('Inbox')}<NavLink to="/admin/leads" className={active}>Enquiries</NavLink><NavLink to="/admin/demos" className={active}>Demo requests</NavLink></>}
             {can(user.role, 'content') && <>
+              {group('Content')}
               {entities.map((e) => <NavLink key={e.key} to={e.key === 'services' ? '/admin/services' : e.key === 'clients' ? '/admin/clients' : `/admin/content/${e.key}`} className={active}>{e.title}</NavLink>)}
-              <NavLink to="/admin/settings" className={active}>Settings</NavLink>
-              <NavLink to="/admin/settings/client-showcase" className={active}>Client showcase settings</NavLink></>}
+              {group('Site')}
+              <NavLink end to="/admin/settings" className={active}>Settings</NavLink>
+              <NavLink to="/admin/settings/client-showcase" className={active}>Client showcase</NavLink></>}
           </nav>
-          <div className="mt-6 text-sm text-white/70">{user.name} ({STATUS_LABEL[user.role] ?? user.role.replace('_', ' ')})
-            <button onClick={logout} className="mt-2 block font-semibold text-amber">Sign out</button></div>
+          <div className="mt-8 rounded-xl bg-white/5 p-3 text-sm">
+            <p className="truncate font-semibold">{user.name}</p>
+            <p className="text-white/60">{STATUS_LABEL[user.role] ?? user.role.replace('_', ' ')}</p>
+            <div className="mt-2 flex gap-4 font-semibold"><Link to="/" target="_blank" className="text-white/80 hover:text-white">View site</Link><button onClick={logout} className="text-amber">Sign out</button></div>
+          </div>
         </aside>
-        <div className="flex-1 bg-cream p-6"><Outlet /></div>
+        <div className="min-w-0 flex-1 p-5 md:p-8"><div className="mx-auto max-w-5xl"><Outlet /></div></div>
       </div>
     </Ctx.Provider>
   )
@@ -68,21 +75,22 @@ export function Dashboard() {
   const { data, loading, error } = useApi<any>('/api/admin/dashboard')
   if (loading) return <Spinner />
   if (error) return <ErrorBox message={error} />
-  const cards: [string, number][] = [['Total enquiries', data.enquiries], ['New enquiries', data.new_enquiries], ['Demo requests', data.demos],
-    ['Products', data.products], ['Published products', data.published_products], ['Published articles', data.published_posts]]
+  const cards: [string, number, string][] = [['Total enquiries', data.enquiries, 'bg-sea-600'], ['New enquiries', data.new_enquiries, 'bg-amber'], ['Demo requests', data.demos, 'bg-teal'],
+    ['Products', data.products, 'bg-sea-200'], ['Published products', data.published_products, 'bg-sea-500'], ['Published articles', data.published_posts, 'bg-navy-700']]
   return (
     <div>
       <h1 className="text-3xl font-bold">Dashboard</h1>
+      <p className="mt-1 text-ink/60">A live count of what is on your site and in your inbox.</p>
       <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {cards.map(([l, v]) => <div key={l} className="rounded-xl bg-white p-5"><p className="text-sm text-ink/60">{l}</p><p className="font-display text-3xl font-bold">{v}</p></div>)}
+        {cards.map(([l, v, c]) => <div key={l} className="card relative overflow-hidden p-5 pl-6"><span className={`absolute inset-y-0 left-0 w-1.5 ${c}`} /><p className="text-sm font-semibold text-ink/60">{l}</p><p className="mt-1 font-display text-4xl font-bold text-navy-900">{v}</p></div>)}
       </div>
-      <h2 className="mt-8 text-xl font-bold">Enquiries by status</h2>
+      <h2 className="mt-10 text-xl font-semibold">Enquiries by status</h2>
       <div className="mt-3 flex flex-wrap gap-3">
-        {Object.keys(data.by_status).length ? Object.entries<number>(data.by_status).map(([s, n]) => <div key={s} className="rounded-lg bg-white px-4 py-2"><Badge value={s} /> <b className="ml-2">{n}</b></div>) : <Empty>No enquiries yet.</Empty>}
+        {Object.keys(data.by_status).length ? Object.entries<number>(data.by_status).map(([s, n]) => <div key={s} className="card flex items-center gap-3 px-4 py-2.5"><Badge value={s} /><b className="font-display text-lg">{n}</b></div>) : <Empty>No enquiries yet.</Empty>}
       </div>
       {data.recent.length > 0 && <>
-        <h2 className="mt-8 text-xl font-bold">Recent activity</h2>
-        <ul className="mt-3 divide-y rounded-xl bg-white">{data.recent.map((r: any) => <li key={r.id} className="p-3 text-sm"><b>{r.user_email}</b> {r.action} {r.target} <span className="text-ink/50">{new Date(r.created_at).toLocaleString()}</span></li>)}</ul></>}
+        <h2 className="mt-10 text-xl font-semibold">Recent activity</h2>
+        <ul className="card mt-3 divide-y divide-sea-100">{data.recent.map((r: any) => <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm"><span><b>{r.user_email}</b> {r.action} <span className="text-ink/60">{r.target}</span></span><span className="text-ink/50">{new Date(r.created_at).toLocaleString()}</span></li>)}</ul></>}
     </div>
   )
 }
@@ -90,14 +98,15 @@ export function Dashboard() {
 const STATUSES = ['new', 'contacted', 'demo_scheduled', 'proposal_sent', 'converted', 'closed']
 
 export function Leads({ kind }: { kind: 'leads' | 'demos' }) {
-  const [q, setQ] = useState(''); const [status, setStatus] = useState(''); const [page, setPage] = useState(1)
-  const [open, setOpen] = useState<any>(null)
+  const [q, setQ] = useState(''); const [qInput, setQInput] = useState(''); const [status, setStatus] = useState(''); const [page, setPage] = useState(1)
+  const [open, setOpen] = useState<any>(null); const [saveErr, setSaveErr] = useState('')
   const { data, loading, error, reload } = useApi<any>(`/api/admin/${kind}?page=${page}&status=${status}&q=${encodeURIComponent(q)}`)
+  useEffect(() => { const t = setTimeout(() => setQ(qInput), 300); return () => clearTimeout(t) }, [qInput])
   useEffect(() => { setPage(1) }, [kind, status, q])
   async function save(e: FormEvent<HTMLFormElement>) {
     e.preventDefault(); const f = new FormData(e.currentTarget)
-    await api(`/api/admin/${kind}/${open.id}`, { method: 'PATCH', body: { status: f.get('status'), notes: f.get('notes'), assigned_to: f.get('assigned_to'), scheduled_date: f.get('scheduled_date'), outcome: f.get('outcome') } })
-    setOpen(null); reload()
+    try { await api(`/api/admin/${kind}/${open.id}`, { method: 'PATCH', body: { status: f.get('status'), notes: f.get('notes'), assigned_to: f.get('assigned_to'), scheduled_date: f.get('scheduled_date'), outcome: f.get('outcome') } })
+      setOpen(null); reload() } catch (x) { setSaveErr(x instanceof Error ? x.message : 'Could not save changes') }
   }
   return (
     <div>
@@ -106,23 +115,23 @@ export function Leads({ kind }: { kind: 'leads' | 'demos' }) {
         <a className="btn-outline" href={`/api/admin/${kind}/export`}>Export CSV</a>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <input aria-label="Search" placeholder="Search name, email, company" className="field max-w-xs" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input aria-label="Search" placeholder="Search name, email, company" className="field max-w-xs" value={qInput} onChange={(e) => setQInput(e.target.value)} />
         <select aria-label="Status" className="field max-w-[200px]" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">All statuses</option>{STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
         </select>
       </div>
-      <div className="mt-4 overflow-x-auto rounded-xl bg-white">
+      <div className="card mt-4 overflow-x-auto">
         {loading ? <Spinner /> : error ? <ErrorBox message={error} /> : !data.items.length ? <Empty>Nothing here yet.</Empty> : (
           <table className="w-full text-left text-sm">
-            <thead className="bg-navy-900 text-white"><tr>{['Date', 'Name', 'Business', 'Interest', 'Source', 'Status', ''].map((h) => <th key={h} className="p-3">{h}</th>)}</tr></thead>
+            <thead className="bg-sea-50 text-left text-navy-800"><tr>{['Date', 'Name', 'Business', 'Interest', 'Source', 'Status', ''].map((h) => <th key={h} className="p-3 font-semibold">{h}</th>)}</tr></thead>
             <tbody>{data.items.map((r: any) => (
-              <tr key={r.id} className="border-t">
+              <tr key={r.id} className="border-t border-sea-100 hover:bg-sea-50/50">
                 <td className="p-3">{new Date(r.created_at).toLocaleDateString()}</td>
                 <td className="p-3"><b>{r.name}</b><br /><span className="text-ink/60">{r.email}</span></td>
                 <td className="p-3">{r.company}<br /><span className="text-ink/60">{r.industry}</span></td>
                 <td className="p-3">{r.interest}</td><td className="p-3">{r.source_page}</td>
                 <td className="p-3"><Badge value={r.status} /></td>
-                <td className="p-3"><button className="font-semibold text-teal-700 underline" onClick={() => setOpen(r)}>View</button></td>
+                <td className="p-3"><button className="btn-outline !px-3 !py-1.5 text-sm" onClick={() => setOpen(r)}>View</button></td>
               </tr>))}</tbody>
           </table>)}
       </div>
@@ -133,17 +142,18 @@ export function Leads({ kind }: { kind: 'leads' | 'demos' }) {
           <button className="btn-outline !py-1.5" disabled={page * data.per >= data.total} onClick={() => setPage(page + 1)}>Next</button>
         </div>)}
       {open && (
-        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
-          <form onSubmit={save} className="max-h-[90vh] w-full max-w-xl space-y-3 overflow-y-auto rounded-2xl bg-white p-6">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 grid place-items-center bg-navy-950/60 p-4 backdrop-blur-sm">
+          <form onSubmit={save} className="max-h-[90vh] w-full max-w-xl space-y-3 overflow-y-auto rounded-2xl bg-white p-6 shadow-soft">
             <h2 className="text-xl font-bold">{open.name}</h2>
             <p className="text-sm">{open.email} {open.phone && `· ${open.phone}`}</p>
-            <p className="whitespace-pre-line rounded-lg bg-cream p-3">{open.requirements}</p>
+            <p className="whitespace-pre-line rounded-lg bg-sea-50 p-3">{open.requirements}</p>
             <div><label className="label">Status</label><select name="status" defaultValue={open.status} className="field">{STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}</select></div>
             <div><label className="label">Assigned to</label><input name="assigned_to" defaultValue={open.assigned_to ?? ''} className="field" /></div>
             {kind === 'demos' && <><div><label className="label">Scheduled date</label><input name="scheduled_date" defaultValue={open.scheduled_date ?? ''} className="field" /></div>
               <div><label className="label">Outcome</label><textarea name="outcome" defaultValue={open.outcome ?? ''} className="field" /></div></>}
             <div><label className="label">Internal notes</label><textarea name="notes" rows={3} defaultValue={open.notes ?? ''} className="field" /></div>
-            <div className="flex gap-3"><button className="btn-primary">Save changes</button><button type="button" className="btn-outline" onClick={() => setOpen(null)}>Cancel</button></div>
+            {saveErr && <ErrorBox message={saveErr} />}
+            <div className="flex gap-3"><button className="btn-primary">Save changes</button><button type="button" className="btn-outline" onClick={() => { setOpen(null); setSaveErr('') }}>Cancel</button></div>
           </form>
         </div>)}
     </div>
@@ -184,7 +194,7 @@ function ImageInput({ f, value, error }: { f: Field; value: string; error?: stri
   return <div>
     <label className="label" htmlFor={id}>{f.label}{f.required && ' *'}</label>
     <input id={id} name={f.name} type="text" required={f.required} className="field" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Image URL or upload" aria-invalid={!!error} />
-    <label className="mt-2 inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-teal-700">
+    <label className="mt-2 inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-sea-700">
       <span>{busy ? 'Uploading…' : 'Upload image'}</span>
       <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={busy} onChange={(e) => { void upload(e.target.files?.[0]); e.currentTarget.value = '' }} />
     </label>
@@ -214,15 +224,17 @@ export function ContentList({ resourceKey }: { resourceKey?: string } = {}) {
   }
   async function save(ev: FormEvent<HTMLFormElement>) {
     ev.preventDefault(); const f = new FormData(ev.currentTarget); const body: Record<string, unknown> = {}
+    let jsonField = ''
     try {
       for (const fl of e.fields) {
         const v = f.get(fl.name)
+        if (fl.type === 'json') jsonField = fl.name
         if (fl.type === 'bool') body[fl.name] = f.get(fl.name) === 'on'
         else if (fl.type === 'list') body[fl.name] = String(v ?? '').split('\n').map((s) => s.trim()).filter(Boolean)
         else if (fl.type === 'json') body[fl.name] = String(v ?? '').trim() ? JSON.parse(String(v)) : []
         else body[fl.name] = v
       }
-    } catch { setErrs({ faqs: 'This is not valid JSON' }); return }
+    } catch { setErrs({ [jsonField]: 'This is not valid JSON' }); setMsg('Please fix the highlighted fields'); return }
     try {
       await api(`/api/admin/${key}${editing.id ? '/' + editing.id : ''}`, { method: editing.id ? 'PUT' : 'POST', body })
       setEditing(null); setMsg('Saved'); reload()
@@ -237,10 +249,12 @@ export function ContentList({ resourceKey }: { resourceKey?: string } = {}) {
     if (other < 0 || other >= items.length) return
     const first = items[index]
     const second = items[other]
+    let a = second.order ?? 0; const b = first.order ?? 0
+    if (a === b) a = b + offset // equal orders would make the swap a no-op
     try {
       await Promise.all([
-        api(`/api/admin/clients/${first.id}`, { method: 'PUT', body: { order: second.order ?? other } }),
-        api(`/api/admin/clients/${second.id}`, { method: 'PUT', body: { order: first.order ?? index } }),
+        api(`/api/admin/clients/${first.id}`, { method: 'PUT', body: { order: a } }),
+        api(`/api/admin/clients/${second.id}`, { method: 'PUT', body: { order: b } }),
       ])
       setMsg('Client order updated')
       reload()
@@ -249,7 +263,7 @@ export function ContentList({ resourceKey }: { resourceKey?: string } = {}) {
     }
   }
   if (editing) return (
-    <form onSubmit={save} className="max-w-2xl space-y-4">
+    <form onSubmit={save} className="card max-w-2xl space-y-4 p-6 md:p-8">
       <h1 className="text-3xl font-bold">{editing.id ? 'Edit' : 'New'} {e.title.toLowerCase()}</h1>
       {e.fields.map((f) => <FieldInput key={f.name} f={f} value={f.name === 'status' ? (editing.status ?? (editing.published ? 'published' : 'draft')) : editing[f.name]} error={errs[f.name]} />)}
       {msg && <ErrorBox message={msg} />}
@@ -264,7 +278,7 @@ export function ContentList({ resourceKey }: { resourceKey?: string } = {}) {
   return (
     <div>
       <div className="flex items-center justify-between"><h1 className="text-3xl font-bold">{e.title}</h1><button className="btn-primary" onClick={() => edit()}>Add new</button></div>
-      {msg && <p role="status" className="mt-3 font-semibold text-teal-700">{msg}</p>}
+      {msg && <p role="status" className="mt-3 font-semibold text-sea-700">{msg}</p>}
       {key === 'clients' && <div className="mt-5 flex flex-wrap gap-3">
         <label className="sr-only" htmlFor="client-search">Search clients</label>
         <input id="client-search" className="field max-w-sm" placeholder="Search clients by name" value={clientSearch} onChange={(event) => setClientSearch(event.target.value)} />
@@ -274,23 +288,23 @@ export function ContentList({ resourceKey }: { resourceKey?: string } = {}) {
         </select>
         <Link to="/#clients" target="_blank" className="btn-outline">Preview homepage showcase</Link>
       </div>}
-      <div className="mt-5 rounded-xl bg-white">
+      <div className="card mt-5">
         {loading ? <Spinner /> : error ? <ErrorBox message={error} /> : !clientItems.length ? <Empty>{key === 'clients' && data?.items.length ? 'No clients match this search or filter.' : 'Nothing here yet. Use "Add new" to create the first one.'}</Empty> : (
-          <ul className="divide-y">{clientItems.map((it, index) => (
-            <li key={it.id} className="flex items-center justify-between gap-3 p-4">
+          <ul className="divide-y divide-sea-100">{clientItems.map((it, index) => (
+            <li key={it.id} className="flex items-center justify-between gap-3 p-4 hover:bg-sea-50/50">
               <div className="flex min-w-0 items-center gap-3">
                 {key === 'clients' && it.logo && <img src={it.logo} alt="" className="h-12 w-20 shrink-0 rounded border bg-white object-contain p-1" />}
                 <div><b>{it[e.titleField]}</b> {e.badge && it[e.badge] && <Badge value={it[e.badge]} />}
-                {'published' in it && <span className={`ml-2 text-xs font-semibold ${it.published ? 'text-teal-700' : 'text-ink/50'}`}>{it.published ? 'Published' : 'Unpublished'}</span>}</div>
-                {key === 'clients' && <span className={`text-xs font-semibold ${it.active ? 'text-teal-700' : 'text-ink/50'}`}>{it.active ? 'Active' : 'Inactive'}{it.show_on_homepage ? ' · Homepage' : ''}</span>}
+                {'published' in it && <span className={`ml-2 text-xs font-semibold ${it.published ? 'text-sea-700' : 'text-ink/50'}`}>{it.published ? 'Published' : 'Unpublished'}</span>}</div>
+                {key === 'clients' && <span className={`text-xs font-semibold ${it.active ? 'text-sea-700' : 'text-ink/50'}`}>{it.active ? 'Active' : 'Inactive'}{it.show_on_homepage ? ' · Homepage' : ''}</span>}
               </div>
               <div className="flex shrink-0 items-center gap-3 text-sm font-semibold">
                 {key === 'clients' && <div className="flex gap-1">
                   <button type="button" aria-label={`Move ${it.name} up`} className="rounded border px-2 py-1 disabled:opacity-40" disabled={index === 0} onClick={() => void moveClient(clientItems, index, -1)}>↑</button>
                   <button type="button" aria-label={`Move ${it.name} down`} className="rounded border px-2 py-1 disabled:opacity-40" disabled={index === clientItems.length - 1} onClick={() => void moveClient(clientItems, index, 1)}>↓</button>
                 </div>}
-                {key === 'services' && it.slug && <Link className="text-teal-700 underline" target="_blank" to={`/services/${it.slug}?preview=${it.id}`}>Preview</Link>}
-                <button className="text-teal-700 underline" onClick={() => edit(it.id)}>Edit</button><button className="text-red-700 underline" onClick={() => del(it)}>Delete</button></div>
+                {key === 'services' && it.slug && <Link className="text-sea-700 underline" target="_blank" to={`/services/${it.slug}?preview=${it.id}`}>Preview</Link>}
+                <button className="text-sea-700 underline" onClick={() => edit(it.id)}>Edit</button><button className="text-red-700 underline" onClick={() => del(it)}>Delete</button></div>
             </li>))}</ul>)}
       </div>
     </div>
@@ -334,7 +348,7 @@ export function Settings() {
     try { await api('/api/admin/settings', { method: 'PUT', body }); setMsg('Settings saved') } catch (x) { if (x instanceof ApiError) { setErrs(x.fields); setMsg(x.message) } }
   }
   return (
-    <form onSubmit={save} className="max-w-2xl space-y-4">
+    <form onSubmit={save} className="card max-w-2xl space-y-4 p-6 md:p-8">
       <h1 className="text-3xl font-bold">Settings</h1>
       {SETTINGS.map((f) => <FieldInput key={f.name} f={f} value={data?.settings?.[f.name] ?? (f.name === 'navigation' ? DEFAULT_NAVIGATION : f.name === 'footer_groups' ? DEFAULT_FOOTER_GROUPS : undefined)} error={errs[f.name]} />)}
       {msg && <p role="status" className="font-semibold">{msg}</p>}
@@ -402,11 +416,11 @@ export function ClientShowcaseSettings() {
     }
   }
   const values = { ...SHOWCASE_DEFAULTS, ...(data?.settings ?? {}) }
-  return <form onSubmit={save} className="max-w-2xl space-y-4">
+  return <form onSubmit={save} className="card max-w-2xl space-y-4 p-6 md:p-8">
     <div><h1 className="text-3xl font-bold">Client showcase settings</h1>
       <p className="mt-2 text-ink/70">Configure the homepage client logo section. Only active clients marked for homepage display appear.</p></div>
     {SHOWCASE_FIELDS.map((field) => <FieldInput key={field.name} f={field} value={values[field.name as keyof typeof SHOWCASE_DEFAULTS]} error={errs[field.name]} />)}
-    {msg && <p role="status" className={Object.keys(errs).length ? 'font-semibold text-red-700' : 'font-semibold text-teal-700'}>{msg}</p>}
+    {msg && <p role="status" className={Object.keys(errs).length ? 'font-semibold text-red-700' : 'font-semibold text-sea-700'}>{msg}</p>}
     <button className="btn-primary">Save showcase settings</button>
   </form>
 }

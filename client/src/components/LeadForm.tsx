@@ -38,7 +38,7 @@ export function LeadForm({ kind, defaultInterest = '' }: { kind: Kind; defaultIn
     }
   }
   if (state === 'done') return (
-    <div role="status" className="rounded-xl bg-teal-50 p-8 text-navy-900">
+    <div role="status" className="card p-8 text-navy-900">
       <h3 className="text-xl font-bold">{demo ? 'Demo request received' : 'Message received'}</h3>
       <p className="mt-2">Thank you. Our team will review your details and contact you using the information you provided.</p>
     </div>
