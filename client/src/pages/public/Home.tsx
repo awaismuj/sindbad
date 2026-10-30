@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useApi } from '../../lib/api'
 import { Seo } from '../../components/Seo'
-import { DashboardPreview } from '../../components/DashboardPreview'
+import { HeroArabic, HeroScene } from '../../components/DashboardPreview'
 import { Badge } from '../../components/ui'
 import { Section, Faqs, CtaBand } from '../../components/bits'
 import { ClientShowcase } from '../../components/ClientShowcase'
@@ -32,28 +32,32 @@ export default function Home() {
     <>
       <Seo description={set.seo_description || set.hero_text} title={set.seo_title} />
       <section className="hero" aria-label="Introduction">
-        <div className="hero__copy">
-          <div className="hero__reveal max-w-xl">
-            <h1 className="text-[2.5rem] font-semibold leading-[1.12] tracking-[-0.025em] sm:text-5xl xl:text-[3.5rem]">{set.hero_title || 'Smart software for every business.'}</h1>
-            <p className="mt-6 max-w-lg text-lg leading-8 text-ink/70">
-              {set.hero_text || 'Manage operations, automate repetitive work and grow with practical software built around the way you run your business.'}
-            </p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Link to="/solutions" className="btn-primary !px-6 !py-3.5 text-base">Explore solutions <Arrow /></Link>
-              <Link to="/demo" className="btn-outline !px-6 !py-3.5 text-base">Book a free demo</Link>
-            </div>
-            <ul className="mt-12 grid max-w-lg grid-cols-2 gap-x-6 gap-y-3 border-t border-sea-100 pt-7 text-[15px] font-semibold text-navy-800">
-              {['POS & business management', 'ERP systems', 'Business automation', 'AI & machine learning'].map((t) => (
-                <li key={t} className="flex items-center gap-2.5"><span className="grid h-5 w-5 place-items-center rounded-full bg-teal/15 text-teal-700"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M7.7 14.3 3.4 10l1.4-1.4 2.9 2.9 7.5-7.5 1.4 1.4z" /></svg></span>{t}</li>
-              ))}
-            </ul>
+        <div className="hero__blue">
+          <div className="hero__grid" aria-hidden="true" />
+          <svg className="absolute inset-x-0 bottom-[-1px] z-20 h-8 w-full md:h-12" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 24C200 -4 400 40 640 20S1040 0 1200 24V40H0Z" fill="#fff" /></svg>
+          <div className="container-x hero__reveal relative z-10 grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
+            <div className="order-2 lg:order-1"><HeroScene /></div>
+            <div className="order-1 lg:order-2"><HeroArabic /></div>
           </div>
         </div>
-        <div className="hero__blue">
-          <svg className="absolute inset-y-0 left-0 hidden h-full w-14 lg:block" viewBox="0 0 56 800" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0H18C58 130 -8 270 22 400S56 650 18 800H0Z" fill="#fff" /></svg>
-          <svg className="absolute inset-x-0 top-0 h-7 w-full lg:hidden" viewBox="0 0 800 28" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0H800V10C660 32 540 -2 400 12S130 30 0 10Z" fill="#fff" /></svg>
-          <div className="hero__grid" aria-hidden="true" />
-          <div className="hero__reveal relative w-full" style={{ animationDelay: '120ms' }}><DashboardPreview /></div>
+        <div className="hero__copy">
+          <div className="container-x hero__reveal grid items-center gap-8 lg:grid-cols-2 lg:gap-14" style={{ animationDelay: '120ms' }}>
+            <h1 className="text-[2.4rem] font-semibold leading-[1.12] tracking-[-0.025em] sm:text-5xl xl:text-[3.5rem]">{set.hero_title || 'Smart software for every business.'}</h1>
+            <div>
+              <p className="max-w-lg text-lg leading-8 text-ink/70">
+                {set.hero_text || 'Manage operations, automate repetitive work and grow with practical software built around the way you run your business.'}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link to="/solutions" className="btn-primary !px-6 !py-3.5 text-base">Explore solutions <Arrow /></Link>
+                <Link to="/demo" className="btn-outline !px-6 !py-3.5 text-base">Book a free demo</Link>
+              </div>
+              <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[15px] font-semibold text-navy-800">
+                {['POS & business management', 'ERP systems', 'Business automation', 'AI & machine learning'].map((t) => (
+                  <li key={t} className="flex items-center gap-2"><span className="grid h-5 w-5 place-items-center rounded-full bg-teal/15 text-teal-700"><svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M7.7 14.3 3.4 10l1.4-1.4 2.9 2.9 7.5-7.5 1.4 1.4z" /></svg></span>{t}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 

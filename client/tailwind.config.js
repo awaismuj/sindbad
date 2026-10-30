@@ -14,7 +14,7 @@ export default {
       fontFamily: {
         display: ['"Sora Variable"', 'system-ui', 'sans-serif'],
         sans: ['"Hanken Grotesk"', 'system-ui', 'sans-serif'],
-        arabic: ['Tajawal', '"Noto Sans Arabic"', 'sans-serif'],
+        arabic: ['Safaa', 'Tajawal', '"Noto Sans Arabic"', 'sans-serif'],
       },
       boxShadow: { soft: '0 1px 2px rgba(10,35,71,.06), 0 12px 32px -12px rgba(10,35,71,.18)' },
     },
