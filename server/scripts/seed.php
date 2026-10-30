@@ -2,11 +2,11 @@
 // Usage: php scripts/seed.php   (creates indexes, the first Super Admin, settings and DEMO content)
 declare(strict_types=1);
 require __DIR__ . '/../vendor/autoload.php';
-use App\{Db, Env};
+use App\{Db, Env, Guard};
 Env::load(__DIR__ . '/../.env');
 
 // ---- Indexes ----
-foreach (['products', 'industries', 'services', 'plans', 'posts', 'portfolio', 'jobs', 'pages'] as $c)
+foreach (['products', 'industries', 'services', 'plans', 'posts', 'portfolio', 'jobs', 'pages', 'service_categories'] as $c)
     Db::col($c)->createIndex(['slug' => 1], ['unique' => true, 'sparse' => true]);
 Db::col('applications')->createIndex(['created_at' => -1]); Db::col('nav_items')->createIndex(['group' => 1, 'order' => 1]);
 Db::col('users')->createIndex(['email' => 1], ['unique' => true]);
@@ -67,6 +67,10 @@ $services = [
     ['POS & Business Management Software', 'pos-business-management', 'Business Management', 'store'],
     ['API Development & Integration', 'api-development-integration', 'Software Development', 'plug'],
 ];
+// Service categories (managed in Admin > Service categories; services pick from this list)
+foreach (array_values(array_unique(array_column($services, 2))) as $i => $cat)
+    Db::col('service_categories')->updateOne(['slug' => Guard::slug($cat)], ['$setOnInsert' => ['name' => $cat, 'slug' => Guard::slug($cat), 'published' => true, 'order' => $i,
+        'created_at' => Db::now(), 'updated_at' => Db::now()]], ['upsert' => true]);
 // Name, slug and category only. Descriptions are written by the administrator; the public page shows a neutral placeholder until then.
 foreach ($services as $i => [$n, $slug, $cat, $icon]) {
     Db::col('services')->updateOne(['slug' => $slug], ['$setOnInsert' => [

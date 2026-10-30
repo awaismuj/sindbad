@@ -3,16 +3,16 @@ import { Link } from 'react-router-dom'
 import { api, ApiError, useApi } from '../../lib/api'
 import { Seo } from '../../components/Seo'
 import { Html } from '../../components/Html'
-import { Checks, CtaBand, PageHead, State } from '../../components/bits'
+import { Checks, PageHead, State } from '../../components/bits'
 
 const Blocks = ({ cards }: { cards?: any[] }) => !cards?.length ? null : (
-  <div className="mt-14 grid gap-6 md:grid-cols-3">{cards.map((c, i) => (
-    <div key={i} className="card overflow-hidden">{c.image && <img src={c.image} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover" />}
-      <div className="p-6"><h3 className="text-xl font-bold">{c.title}</h3><p className="mt-2 text-ink/75">{c.text}</p></div></div>))}</div>)
+  <div className="mt-12 grid gap-8 md:grid-cols-3">{cards.map((c, i) => (
+    <div key={i} className="rounded-3xl bg-white p-6 ring-1 ring-navy-900/10">{c.image && <img src={c.image} alt="" loading="lazy" className="mb-4 aspect-[4/3] w-full rounded-2xl object-cover" />}
+      <h3 className="text-xl font-bold">{c.title}</h3><p className="mt-2 text-ink/75">{c.text}</p></div>))}</div>)
 
 function usePage(slug: string) { return useApi<{ item: any }>(`/api/pages/${slug}`) }
 const Pending = ({ children }: { children?: React.ReactNode }) => (
-  <div className="max-w-3xl rounded-3xl bg-white p-8 ring-1 ring-navy-900/10"><p className="text-lg">Content for this page is being prepared.</p>{children}</div>)
+  <div className="rounded-3xl bg-white p-8 ring-1 ring-navy-900/10"><p className="text-lg">Content for this page is being prepared.</p>{children}</div>)
 
 export function About() {
   const { data, loading } = usePage('about'); const p = data?.item
@@ -21,19 +21,18 @@ export function About() {
     <>
       <Seo title={p?.seo_title || 'About us'} description={p?.seo_description || p?.intro} image={p?.og_image} />
       <PageHead title={p?.title || 'About us'} intro={p?.intro || 'We sail your business toward new digital horizons.'} />
-      <div className="container-x py-16 md:py-20">
+      <div className="container-x py-16">
         {loading ? <State loading error={null} empty={false} emptyText="" /> : !has ? <Pending><Link to="/contact" className="btn-dark mt-5">Contact us</Link></Pending> : (<>
           <div className="grid gap-12 md:grid-cols-12">
             <div className="md:col-span-7"><Html html={p.content} /></div>
             {p.image && <img src={p.image} alt="" className="rounded-3xl md:col-span-5" />}
           </div>
-          {(p.mission || p.vision) && <div className="mt-14 grid gap-6 md:grid-cols-2">
+          {(p.mission || p.vision) && <div className="mt-12 grid gap-6 md:grid-cols-2">
             {p.mission && <div className="rounded-3xl bg-navy-900 p-8 text-white"><h2 className="text-2xl font-bold !text-amber">Mission</h2><p className="mt-3 text-lg">{p.mission}</p></div>}
-            {p.vision && <div className="rounded-3xl bg-teal p-8"><h2 className="text-2xl font-bold !text-navy-950">Vision</h2><p className="mt-3 text-lg text-navy-950">{p.vision}</p></div>}</div>}
-          {p.values?.length > 0 && <div className="mt-14"><h2 className="mb-6 text-3xl font-bold">Our values</h2><Checks items={p.values} /></div>}
+            {p.vision && <div className="rounded-3xl bg-teal p-8 text-navy-950"><h2 className="text-2xl font-bold">Vision</h2><p className="mt-3 text-lg">{p.vision}</p></div>}</div>}
+          {p.values?.length > 0 && <div className="mt-12"><h2 className="mb-4 text-3xl font-extrabold">Our values</h2><Checks items={p.values} /></div>}
           <Blocks cards={p.cards} /></>)}
       </div>
-      <CtaBand />
     </>
   )
 }
@@ -45,10 +44,10 @@ export function Life() {
     <>
       <Seo title={p?.seo_title || 'Life at Sindbad Solution'} description={p?.seo_description || p?.intro} image={p?.og_image} />
       <PageHead title={p?.title || 'Life at Sindbad Solution'} intro={p?.intro} />
-      <div className="container-x py-16 md:py-20">
+      <div className="container-x py-16">
         {loading ? <State loading error={null} empty={false} emptyText="" /> : !has ? <Pending><Link to="/careers" className="btn-dark mt-5">See careers</Link></Pending> : (<>
           <Html html={p.content} className="max-w-3xl" /><Blocks cards={p.cards} />
-          {p.gallery?.length > 0 && <div className="mt-14 grid grid-cols-2 gap-4 md:grid-cols-3">{p.gallery.map((u: string) => <img key={u} src={u} alt="" loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover" />)}</div>}</>)}
+          {p.gallery?.length > 0 && <div className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-3">{p.gallery.map((u: string) => <img key={u} src={u} alt="" loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover" />)}</div>}</>)}
       </div>
     </>
   )
@@ -66,17 +65,17 @@ export function Careers() {
     <>
       <Seo title={p?.seo_title || 'Careers'} description={p?.seo_description || p?.intro} />
       <PageHead title={p?.title || 'Careers'} intro={p?.intro || 'Join the crew.'} />
-      <div className="container-x py-16 md:py-20">
-        {p?.content && <Html html={p.content} className="mb-14 max-w-3xl" />}
-        <h2 className="mb-6 text-3xl font-bold md:text-4xl">Open positions</h2>
+      <div className="container-x py-16">
+        {p?.content && <Html html={p.content} className="mb-12 max-w-3xl" />}
+        <h2 className="mb-6 text-3xl font-extrabold">Open positions</h2>
         <State loading={loading} error={error} empty={!jobs.length} emptyText="There are no open positions right now. You can still introduce yourself through our contact page." />
         <div className="space-y-5">{jobs.map((j) => (
-          <article key={j.id} id={j.slug} className="rounded-2xl bg-white p-7 ring-1 ring-navy-900/10">
-            <div className="flex flex-wrap items-start justify-between gap-4"><div><h3 className="text-2xl font-bold">{j.title}</h3>
-              <ul className="mt-2 flex flex-wrap gap-2 text-sm">{[j.department, j.location, TYPE[j.employment_type], j.deadline && `Apply by ${j.deadline}`].filter(Boolean).map((t) => <li key={t} className="chip">{t}</li>)}</ul></div>
-              <button className="btn-dark" aria-expanded={apply?.id === j.id} onClick={() => setApply(apply?.id === j.id ? null : j)}>{apply?.id === j.id ? 'Close' : 'Apply now'}</button></div>
-            <Html html={j.description} className="mt-5 !text-base" />
-            {j.requirements?.length > 0 && <div className="mt-5"><h4 className="mb-3 font-display text-lg font-bold">Requirements</h4><Checks items={j.requirements} /></div>}
+          <article key={j.id} className="rounded-3xl bg-white p-7 ring-1 ring-navy-900/10">
+            <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="text-2xl font-bold">{j.title}</h3>
+              <p className="mt-1 text-sm text-ink/65">{[j.department, j.location, TYPE[j.employment_type], j.deadline && `Apply by ${j.deadline}`].filter(Boolean).join(' · ')}</p></div>
+              <button className="btn-dark" onClick={() => setApply(apply?.id === j.id ? null : j)}>{apply?.id === j.id ? 'Close' : 'Apply'}</button></div>
+            <Html html={j.description} className="mt-4 !text-base" />
+            {j.requirements?.length > 0 && <div className="mt-4"><h4 className="mb-2 font-bold">Requirements</h4><Checks items={j.requirements} /></div>}
             {apply?.id === j.id && <ApplyForm job={j} />}
           </article>))}</div>
       </div>

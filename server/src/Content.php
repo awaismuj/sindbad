@@ -23,6 +23,9 @@ final class Content {
                 'status' => ['type' => 'enum:draft|published|unpublished', 'required' => true],
                 'featured' => ['type' => 'bool'], 'show_in_menu' => ['type' => 'bool'], 'show_in_footer' => ['type' => 'bool'], 'order' => ['type' => 'int'],
             ] + $seo],
+            'service_categories' => ['slugFrom' => 'name', 'public' => ['published' => true], 'sort' => ['order' => 1, 'name' => 1], 'fields' => [
+                'name' => ['type' => 'string', 'required' => true], 'slug' => ['type' => 'string'], 'description' => ['type' => 'string', 'max' => 300],
+            ] + $pub],
             'products' => ['slugFrom' => 'name', 'public' => ['published' => true], 'sort' => ['order' => 1, 'name' => 1], 'fields' => [
                 'name' => ['type' => 'string', 'required' => true], 'slug' => ['type' => 'string'],
                 'category' => ['type' => 'string'], 'short' => ['type' => 'string', 'max' => 300],

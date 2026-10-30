@@ -30,7 +30,7 @@ final class Guard {
     }
     /**
      * Validate + coerce input against a field spec. Returns [clean, errors].
-     * Spec types: string, text, bool, int, number, array, json, email, phone, enum:a|b, url, color
+     * Spec types: string, text, bool, int, number, array, json, email, phone, enum:a|b, url, hex
      */
     public static function clean(array $in, array $spec, bool $partial = false): array {
         $out = []; $err = [];
@@ -63,9 +63,9 @@ final class Guard {
                     $v = trim((string)$v);
                     if (!preg_match('#^(https?://|/)#i', $v) || strlen($v) > 500) { $err[$name] = 'Enter a valid URL'; break; }
                     $out[$name] = $v; break;
-                case $type === 'color':
+                case $type === 'hex':
                     $v = strtolower(trim((string)$v));
-                    if (!preg_match('/^#[0-9a-f]{6}$/', $v)) { $err[$name] = 'Use a colour such as #2ec4b6'; break; }
+                    if (!preg_match('/^#[0-9a-f]{6}$/', $v)) { $err[$name] = 'Use a colour like #0B1F3A'; break; }
                     $out[$name] = $v; break;
                 case $type === 'html':
                     $v = Sanitizer::clean(substr((string)$v, 0, 200000));

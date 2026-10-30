@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react'
-import { ApiError } from '../lib/api'
-import type { RepKey } from '../lib/schema'
+import { api, ApiError, useApi } from '../lib/api'
 
 export async function uploadImage(file: File): Promise<string> {
   const fd = new FormData(); fd.append('file', file)
@@ -82,46 +81,78 @@ export function SectionsField({ name, value, order, labels }: { name: string; va
   )
 }
 
-/** Add / remove / reorder rows of text fields (FAQs, process steps, content blocks). Saved as JSON in a hidden input. */
-export function RepeaterField({ name, label, keys, value }: { name: string; label: string; keys: RepKey[]; value?: Record<string, string>[] }) {
-  const [rows, setRows] = useState<Record<string, string>[]>(value?.length ? value.map((r) => ({ ...r })) : [])
-  const set = (i: number, k: string, v: string) => setRows(rows.map((r, n) => (n === i ? { ...r, [k]: v } : r)))
+export interface PairCol { key: string; label: string; area?: boolean }
+/** Repeating rows (FAQ question/answer, delivery steps, content blocks) with add, remove and reorder. Saved as JSON. */
+export function PairsField({ name, value, cols, label, addLabel = 'Add row' }: { name: string; value?: Record<string, string>[]; cols: PairCol[]; label: string; addLabel?: string }) {
+  const [rows, setRows] = useState<Record<string, string>[]>(Array.isArray(value) ? value.map((r) => ({ ...r })) : [])
+  const clean = rows.filter((r) => cols.some((c) => (r[c.key] ?? '').trim()))
+  const set = (i: number, k: string, v: string) => setRows(rows.map((r, j) => (j === i ? { ...r, [k]: v } : r)))
   const move = (i: number, d: number) => { const l = [...rows]; const j = i + d; if (j < 0 || j >= l.length) return; [l[i], l[j]] = [l[j], l[i]]; setRows(l) }
-  const clean = rows.filter((r) => keys.some((k) => (r[k.k] ?? '').trim()))
   return (
     <div>
       <span className="label">{label}</span>
       <input type="hidden" name={name} value={JSON.stringify(clean)} />
       <ul className="space-y-3">
         {rows.map((r, i) => (
-          <li key={i} className="space-y-2 rounded-xl border border-navy-900/15 bg-white p-3">
-            {keys.map((k) => k.area
-              ? <textarea key={k.k} aria-label={k.label} placeholder={k.label} rows={3} className="field" value={r[k.k] ?? ''} onChange={(e) => set(i, k.k, e.target.value)} />
-              : <input key={k.k} aria-label={k.label} placeholder={k.label} className="field" value={r[k.k] ?? ''} onChange={(e) => set(i, k.k, e.target.value)} />)}
-            <div className="flex gap-4 text-sm font-semibold">
-              <button type="button" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Move up">Move up</button>
-              <button type="button" disabled={i === rows.length - 1} onClick={() => move(i, 1)} aria-label="Move down">Move down</button>
-              <button type="button" className="text-red-700" onClick={() => setRows(rows.filter((_, n) => n !== i))}>Remove</button>
+          <li key={i} className="rounded-xl border border-navy-900/15 bg-white p-3">
+            <div className="space-y-2">{cols.map((c) => c.area
+              ? <textarea key={c.key} rows={3} aria-label={`${label} ${i + 1}: ${c.label}`} placeholder={c.label} className="field" value={r[c.key] ?? ''} onChange={(e) => set(i, c.key, e.target.value)} />
+              : <input key={c.key} aria-label={`${label} ${i + 1}: ${c.label}`} placeholder={c.label} className="field" value={r[c.key] ?? ''} onChange={(e) => set(i, c.key, e.target.value)} />)}</div>
+            <div className="mt-2 flex gap-4 text-sm font-semibold">
+              <button type="button" disabled={i === 0} onClick={() => move(i, -1)}>▲ Up</button>
+              <button type="button" disabled={i === rows.length - 1} onClick={() => move(i, 1)}>▼ Down</button>
+              <button type="button" className="text-red-700" onClick={() => setRows(rows.filter((_, j) => j !== i))}>Remove</button>
             </div>
           </li>))}
       </ul>
-      <button type="button" className="btn-outline mt-3 !py-2" onClick={() => setRows([...rows, {}])}>Add {rows.length ? 'another' : 'one'}</button>
+      <button type="button" className="btn-outline mt-3 !py-2" onClick={() => setRows([...rows, {}])}>{addLabel}</button>
     </div>
   )
 }
 
-/** Colour picker with a hex box; empty means "use the default brand colour". */
-export function ColorField({ name, label, value, fallback }: { name: string; label: string; value?: string; fallback: string }) {
-  const [v, setV] = useState(value ?? '')
+/** Pick related records from a list instead of typing slugs. Submits the chosen slugs. */
+export function RefsField({ name, value, source, label, exclude }: { name: string; value?: string[]; source: string; label: string; exclude?: string }) {
+  const { data, loading } = useApi<{ items: any[] }>(`/api/admin/${source}`)
+  const items = (data?.items ?? []).filter((x) => x.slug && x.slug !== exclude)
+  const known = new Set(items.map((x) => x.slug)); const stale = (value ?? []).filter((s) => !known.has(s))
+  return (
+    <fieldset>
+      <legend className="label">{label}</legend>
+      {loading ? <p className="text-sm text-ink/60">Loading…</p> : !items.length && !stale.length ? <p className="text-sm text-ink/60">Nothing to choose from yet.</p> : (
+        <div className="grid gap-1 rounded-xl border border-navy-900/15 bg-white p-3 sm:grid-cols-2">
+          {items.map((x) => (
+            <label key={x.slug} className="flex items-center gap-2 text-sm"><input type="checkbox" name={name} value={x.slug} defaultChecked={value?.includes(x.slug)} />
+              {x.name || x.title}{(x.status && x.status !== 'published' && x.status !== 'available') || x.published === false ? <span className="text-ink/50"> (not published)</span> : null}</label>))}
+          {stale.map((s) => <label key={s} className="flex items-center gap-2 text-sm text-ink/60"><input type="checkbox" name={name} value={s} defaultChecked /> {s} (no longer exists, untick to remove)</label>)}
+        </div>)}
+    </fieldset>
+  )
+}
+
+/** Category text box that suggests the categories managed under "Service categories". */
+export function CategoryField({ name, value, label }: { name: string; value?: string; label: string }) {
+  const { data } = useApi<{ items: any[] }>('/api/admin/service_categories')
   return (
     <div>
-      <label className="label" htmlFor={`c-${name}`}>{label}</label>
-      <input type="hidden" name={name} value={v} />
-      <div className="flex items-center gap-3">
-        <input id={`c-${name}`} type="color" value={/^#[0-9a-f]{6}$/i.test(v) ? v : fallback} onChange={(e) => setV(e.target.value)} className="h-11 w-16 cursor-pointer rounded-lg border border-navy-900/15 bg-white p-1" />
-        <input aria-label={`${label} hex value`} className="field max-w-[9rem]" placeholder={fallback} value={v} onChange={(e) => setV(e.target.value)} />
-        {v && <button type="button" className="text-sm font-semibold text-teal-700 underline" onClick={() => setV('')}>Use default</button>}
-      </div>
+      <label className="label" htmlFor={`f-${name}`}>{label}</label>
+      <input id={`f-${name}`} name={name} className="field" list={`dl-${name}`} defaultValue={value ?? ''} autoComplete="off" />
+      <datalist id={`dl-${name}`}>{data?.items.map((c) => <option key={c.id} value={c.name} />)}</datalist>
+      <p className="text-xs text-ink/60">Pick an existing category, or type a new one (then add it under Service categories to control its order).</p>
+    </div>
+  )
+}
+
+/** Choose the dropdown a menu link belongs to. */
+export function ParentField({ name, value, label, self }: { name: string; value?: string; label: string; self?: string }) {
+  const { data } = useApi<{ items: any[] }>('/api/admin/nav_items')
+  const tops = (data?.items ?? []).filter((x) => x.group === 'header' && !x.parent && x.id !== self)
+  return (
+    <div>
+      <label className="label" htmlFor={`f-${name}`}>{label}</label>
+      <select id={`f-${name}`} name={name} className="field" defaultValue={value ?? ''}>
+        <option value="">Top level (not inside a dropdown)</option>
+        {tops.map((x) => <option key={x.id} value={x.id}>Inside the "{x.label}" dropdown</option>)}
+      </select>
     </div>
   )
 }
